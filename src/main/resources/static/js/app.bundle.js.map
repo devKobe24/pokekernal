@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../frontend/ts/main.ts"],
+  "sourcesContent": ["console.log(\"Hello, PokeKernel! TypeScript Build Success.\");"],
+  "mappings": "mBAAA,QAAQ,IAAI,8CAA8C",
+  "names": []
+}

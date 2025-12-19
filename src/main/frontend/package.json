@@ -1,0 +1,11 @@
+{
+  "name": "pokemon-card-web",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "esbuild ts/main.ts --bundle --minify --sourcemap --outfile=../resources/static/js/app.bundle.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.0",
+    "typescript": "^5.0.0"
+  }
+}

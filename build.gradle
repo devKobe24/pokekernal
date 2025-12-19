@@ -1,0 +1,97 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.0' // 버전은 최신 안정 버전 권장
+    id 'io.spring.dependency-management' version '1.1.4'
+    // Node.js 통합 플러그인 (Frontend 빌드 자동화)
+    id "com.github.node-gradle.node" version "7.0.0"
+}
+
+group = 'com.kobe.pokekernle'
+version = '0.0.1-SNAPSHOT'
+description = 'pokekernel'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // 1. Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Thymeleaf Extras (Security 통합용)
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
+    // 2. Database
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    runtimeOnly 'com.h2database:h2' // 로컬 개발용
+
+    // 3. QueryDSL (Spring Boot 3.x - Jakarta 필수)
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    // 4. AWS (나중에 설정 파일 연동 시 활성화)
+    // implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0')
+    // implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3'
+    // implementation 'io.awspring.cloud:spring-cloud-aws-starter-secrets-manager'
+
+    // 5. Lombok & Utils
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+}
+
+// --- Frontend 빌드 자동화 설정 ---
+
+node {
+    // Gradle이 사용할 Node 버전 고정 (협업/배포 시 버전 일치)
+    version = '18.16.0'
+    npmVersion = '9.5.1'
+    download = true // Node가 없으면 자동 다운로드
+    nodeProjectDir = file("${project.projectDir}/src/main/frontend")
+}
+
+// 1. npm install은 플러그인이 자동으로 'npmInstall' 태스크를 등록해두므로 별도 정의 불필요
+
+// 2. npm run build 스크립트 실행 태스크 등록 (Lazy Configuration)
+tasks.register('npmRunBuild', NpmTask) {
+    // 코틀린 DSL 에서는 NpmTask 타입 import 필요할 수 있으나 Groovy에서는 플러그인이 처리
+    args = ['run', 'build']
+
+    // 입출력 파일을 명시하면 Gradle이 캐싱(Up-to-date) 처리를 해줘서 빌드 속도가 빨라짐
+    inputs.dir(file("${project.projectDir}/src/main/frontend/ts"))
+    inputs.file(file("${project.projectDir}/src/main/frontend/package.json"))
+    inputs.file(file("${project.projectDir}/src/main/frontend/tsconfig.json"))
+    outputs.dir(file("${project.projectDir}/src/main/resources/static/js"))
+
+    // npmInstall이 먼저 실행되어야 함을 명시
+    dependsOn tasks.npmInstall
+}
+
+// 3. Java의 리소스 처리(processResources)가 돌기 전에 Frontend 빌드가 먼저 돌도록 설정
+tasks.named('processResources') {
+    dependsOn tasks.named('npmRunBuild')
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
