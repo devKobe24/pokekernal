@@ -1,0 +1,22 @@
+package com.kobe.pokekernle.domain.card.repository;
+
+import com.kobe.pokekernle.domain.card.entity.Card;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+/**
+ * packageName    : com.kobe.pokekernle.domain.card.repository
+ * fileName       : CardRepository
+ * author         : kobe
+ * date           : 2025. 12. 21.
+ * description    :
+ * ===========================================================
+ * DATE              AUTHOR             NOTE
+ * -----------------------------------------------------------
+ * 2025. 12. 21.        kobe       최초 생성
+ */
+public interface CardRepository extends JpaRepository<Card, Long> {
+    // 외부 ID(예: xy1-1)로 카드를 찾아보기 위함
+    Optional<Card> findByExternalId(String externalId);
+}

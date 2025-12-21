@@ -1,4 +1,4 @@
-package com.kobe.pokekernle.global.config;
+package com.kobe.pokekernle.global.config.security;
 
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +32,8 @@ public class DevSecurityConfig {
                         .requestMatchers(PathRequest.toH2Console()).permitAll()
                         // 2. 정적 리소스(js, css, images) 자동 허용
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        .requestMatchers("/admin/**").permitAll()
+                        .requestMatchers("/cards/**").permitAll() // 카드 목록 페이지 허용
                         // 3. 메인 페이지 및 개발용 테스트 경로 허용
                         .requestMatchers("/", "/api/test/**").permitAll()
                         .anyRequest().authenticated()

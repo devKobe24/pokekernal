@@ -1,4 +1,4 @@
-package com.kobe.pokekernle.global.config;
+package com.kobe.pokekernle.global.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

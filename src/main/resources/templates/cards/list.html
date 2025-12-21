@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PokeKernel - Collection</title>
+    <link rel="stylesheet" href="/css/card-list.css" />
+  </head>
+  <body>
+    <header>
+      <h1>My Pokémon Collection</h1>
+      <div class="stats">
+        <span>Total Cards: <b th:text="${cards.size()}">0</b></span>
+      </div>
+    </header>
+
+    <main>
+      <div class="card-grid">
+        <div
+          class="card-item"
+          th:each="card : ${cards}"
+          th:onclick="|location.href='@{/cards/{id}(id=${card.id})}'|"
+        >
+          <div class="card-image">
+            <img th:src="${card.imageUrl}" th:alt="${card.name}" />
+          </div>
+          <div class="card-info">
+            <h3 th:text="${card.name}">Card Name</h3>
+            <p class="set-name" th:text="${card.setName}">Set Name</p>
+            <div class="meta">
+              <span class="rarity" th:text="${card.rarity}">Rarity</span>
+              <span class="price" th:text="${card.priceDisplay}">Price</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div th:if="${cards.isEmpty()}" class="empty-state">
+        <p>수집된 카드가 없습니다. 관리자 메뉴에서 수집을 진행해주세요.</p>
+      </div>
+    </main>
+
+    <script src="/js/app.bundle.js"></script>
+  </body>
+</html>

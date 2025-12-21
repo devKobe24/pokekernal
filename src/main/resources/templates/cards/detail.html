@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title th:text="${card.name} + ' - PokeKernel'">Card Detail</title>
+    <link rel="stylesheet" href="/css/card-list.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      .detail-container {
+        display: flex;
+        gap: 40px;
+        max-width: 1000px;
+        margin: 40px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+      .detail-image img {
+        max-width: 400px;
+        border-radius: 10px;
+      }
+      .detail-info {
+        flex: 1;
+      }
+      .chart-container {
+        margin-top: 30px;
+        height: 300px;
+      }
+      .back-btn {
+        display: inline-block;
+        margin-bottom: 20px;
+        text-decoration: none;
+        color: #666;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="max-width: 1000px; margin: 0 auto">
+      <a href="/cards" class="back-btn">← Back to List</a>
+    </div>
+
+    <div class="detail-container">
+      <div class="detail-image">
+        <img th:src="${card.imageUrl}" th:alt="${card.name}" />
+      </div>
+
+      <div class="detail-info">
+        <h1 th:text="${card.name}">Card Name</h1>
+        <p
+          style="color: #666; font-size: 1.1em"
+          th:text="${card.setName} + ' | ' + ${card.rarity}"
+        >
+          Set | Rarity
+        </p>
+
+        <h2 style="color: #d97706; margin-top: 20px">
+          <span th:text="${card.currency}">€</span>
+          <span th:text="${card.currentPrice}">12.50</span>
+        </h2>
+
+        <div class="chart-container">
+          <canvas id="priceChart"></canvas>
+        </div>
+
+        <div
+          th:if="${#lists.isEmpty(card.priceHistory)}"
+          style="color: #999; margin-top: 20px; text-align: center"
+        >
+          <p>⚠️ 시세 히스토리 데이터가 충분하지 않습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <script th:inline="javascript">
+      /* Thymeleaf 변수를 JS 변수로 주입 */
+      const historyData = [[${card.priceHistory}]];
+
+      if (historyData && historyData.length > 0) {
+          const ctx = document.getElementById('priceChart').getContext('2d');
+
+          // 데이터 가공
+          const labels = historyData.map(h => h.date);
+          const dataPoints = historyData.map(h => h.price);
+
+          new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Price History (' + [[${card.currency}]] + ')',
+                      data: dataPoints,
+                      borderColor: '#d97706',
+                      backgroundColor: 'rgba(217, 119, 6, 0.1)',
+                      borderWidth: 2,
+                      tension: 0.3, // 곡선 부드럽게
+                      fill: true
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      legend: { display: false } // 범례 숨김
+                  },
+                  scales: {
+                      y: { beginAtZero: false } // 가격변동폭을 잘 보여주기 위해 0부터 시작 안 함
+                  }
+              }
+          });
+      }
+    </script>
+  </body>
+</html>

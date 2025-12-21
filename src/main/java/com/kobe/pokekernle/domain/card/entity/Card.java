@@ -1,0 +1,61 @@
+package com.kobe.pokekernle.domain.card.entity;
+
+import com.kobe.pokekernle.global.entity.BaseTimeEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+/**
+ * packageName    : com.kobe.pokekernle.domain.card.entity
+ * fileName       : Card
+ * author         : kobe
+ * date           : 2025. 12. 20.
+ * description    :
+ * ===========================================================
+ * DATE              AUTHOR             NOTE
+ * -----------------------------------------------------------
+ * 2025. 12. 20.        kobe       최초 생성
+ */
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "cards", indexes = {
+        @Index(name = "idx_card_name", columnList = "name"),
+        @Index(name = "idx_set_name", columnList = "setName")
+})
+public class Card extends BaseTimeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name; // 카드 이름 (예: Charizard)
+
+    @Column(nullable = false)
+    private String setName; // 세트 이름 (예: 151, 초전 브레이)
+
+    private String number; // 카드 번호 (예: 7/109)
+
+    @Enumerated(EnumType.STRING)
+    private Rarity rarity; // 희귀도
+
+    @Column(length = 1000)
+    private String imageUrl; // 카드 이미지 URL (S3 또는 외부 링크)
+
+    // 외부 API(예: TCGPlayer)와의 연동을 위한 ID
+    @Column(unique = true)
+    private String externalId;
+
+    @Builder
+    public Card(String name, String setName, String number, Rarity rarity, String imageUrl, String externalId) {
+        this.name = name;
+        this.setName = setName;
+        this.number = number;
+        this.rarity = rarity;
+        this.imageUrl = imageUrl;
+        this.externalId = externalId;
+    }
+}
