@@ -1,5 +1,7 @@
 package com.kobe.pokekernle.domain.admin.service;
 
+import io.awspring.cloud.s3.S3Template;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,14 +23,13 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ImageUploadService {
 
-    @Value("${app.upload.dir:uploads/images}")
-    private String uploadDir;
+    private final S3Template s3Template;
 
-    @Value("${app.upload.url-prefix:/uploads/images}")
-    private String urlPrefix;
-
+    @Value("${spring.cloud.aws.s3.bucket}")
+    private String bucketName;
     /**
      * 이미지 파일을 업로드하고 접근 가능한 URL을 반환합니다.
      * @param file 업로드할 파일
@@ -42,38 +43,18 @@ public class ImageUploadService {
 
         // 파일 확장자 검증
         String originalFilename = file.getOriginalFilename();
-        if (originalFilename == null || !isImageFile(originalFilename)) {
-            throw new IllegalArgumentException("이미지 파일만 업로드 가능합니다. (jpg, jpeg, png, gif, webp)");
-        }
-
-        // 업로드 디렉토리 생성
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-            log.info("[IMAGE UPLOAD] 업로드 디렉토리 생성: {}", uploadPath.toAbsolutePath());
-        }
-
-        // 고유한 파일명 생성 (UUID + 원본 확장자)
         String extension = getFileExtension(originalFilename);
-        String uniqueFilename = UUID.randomUUID().toString() + "." + extension;
-        Path filePath = uploadPath.resolve(uniqueFilename);
+        // S3 내 파일 키 (이름)
+        String s3Key = "images/" + UUID.randomUUID().toString() + "." + extension;
 
-        // 파일 저장
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-        log.info("[IMAGE UPLOAD] 이미지 업로드 완료: {} -> {}", originalFilename, filePath.toAbsolutePath());
+        // S3로 업로드
+        s3Template.upload(bucketName, s3Key, file.getInputStream());
 
-        // 접근 가능한 URL 반환
-        return urlPrefix + "/" + uniqueFilename;
-    }
+        // 업로드된 파일의 접근 URL 생성 (S3 URL)
+        String fileUrl = s3Template.download(bucketName, s3Key).getURL().toString();
 
-    /**
-     * 파일이 이미지 파일인지 확인합니다.
-     */
-    private boolean isImageFile(String filename) {
-        String extension = getFileExtension(filename).toLowerCase();
-        return extension.equals("jpg") || extension.equals("jpeg") || 
-               extension.equals("png") || extension.equals("gif") || 
-               extension.equals("webp");
+        log.info("[S3 UPLOAD] 완료: {}", fileUrl);
+        return fileUrl;
     }
 
     /**
@@ -81,7 +62,7 @@ public class ImageUploadService {
      */
     private String getFileExtension(String filename) {
         int lastDotIndex = filename.lastIndexOf('.');
-        if (lastDotIndex == -1 || lastDotIndex == filename.length() - 1) {
+        if (lastDotIndex == -1) {
             return "";
         }
         return filename.substring(lastDotIndex + 1);
