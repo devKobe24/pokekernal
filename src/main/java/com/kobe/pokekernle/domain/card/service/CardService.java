@@ -36,6 +36,7 @@ public class CardService {
     private final CardRepository cardRepository;
     private final MarketPriceRepository marketPriceRepository;
     private final PriceHistoryRepository priceHistoryRepository;
+    private final CurrencyConverterService currencyConverterService;
 
     public CardDetailResponse getCardDetail(Long cardId) {
         // 1. 카드 조회 (없으면 404 예외)
@@ -48,8 +49,8 @@ public class CardService {
         // 3. 시세 히스토리 조회(그래프용)
         List<PriceHistory> histories = priceHistoryRepository.findAllByCardOrderByRecordedAtAsc(card);
 
-        // 4. DTO 변환
-        return CardDetailResponse.of(card, marketPrice, histories);
+        // 4. DTO 변환 (USD로 변환하여 표시)
+        return CardDetailResponse.of(card, marketPrice, histories, currencyConverterService);
     }
 
     public List<CardListResponse> getAllCards() {
@@ -65,9 +66,9 @@ public class CardService {
                 .filter(mp -> mp.getCard() != null)
                 .collect(Collectors.toMap(mp -> mp.getCard().getId(), Function.identity(), (p1, p2) -> p1));
 
-        // 3. DTO 변환
+        // 3. DTO 변환 (USD로 변환하여 표시)
         return cards.stream()
-                .map(card -> CardListResponse.from(card, priceMap.get(card.getId())))
+                .map(card -> CardListResponse.from(card, priceMap.get(card.getId()), currencyConverterService))
                 .collect(Collectors.toList());
     }
 }

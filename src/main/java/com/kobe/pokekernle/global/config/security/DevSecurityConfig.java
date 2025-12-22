@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * packageName    : com.kobe.pokekernle.global.config
@@ -32,11 +33,34 @@ public class DevSecurityConfig {
                         .requestMatchers(PathRequest.toH2Console()).permitAll()
                         // 2. 정적 리소스(js, css, images) 자동 허용
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers("/admin/**").permitAll()
+                        // 3. 업로드된 이미지 접근 허용
+                        .requestMatchers("/uploads/**").permitAll()
+                        // 4. 로그인 페이지는 모두 접근 가능
+                        .requestMatchers("/admin/login").permitAll()
+                        // 5. 관리자 페이지는 ADMIN 권한 필요
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/cards/**").permitAll() // 카드 목록 페이지 허용
-                        // 3. 메인 페이지 및 개발용 테스트 경로 허용
-                        .requestMatchers("/", "/api/test/**").permitAll()
+                        // API 요청 허용 (POST 요청도 포함)
+                        .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/collection/**").permitAll()
+                        .requestMatchers("/").permitAll()
                         .anyRequest().authenticated()
+                )
+                // 폼 로그인 설정
+                .formLogin(login -> login
+                        .loginPage("/admin/login") // 로그인 페이지 경로
+                        .loginProcessingUrl("/admin/login") // 로그인 처리 URL
+                        .defaultSuccessUrl("/admin/cards/register", true) // 로그인 성공 시 이동할 경로
+                        .failureUrl("/admin/login?error=true") // 로그인 실패 시 이동할 경로
+                        .usernameParameter("email") // 이메일을 사용자명으로 사용
+                        .passwordParameter("password")
+                        .permitAll()
+                )
+                // 로그아웃 설정
+                .logout(logout -> logout
+                        .logoutRequestMatcher(new AntPathRequestMatcher("/admin/logout"))
+                        .logoutSuccessUrl("/admin/login?logout=true")
+                        .permitAll()
                 )
                 // H2 Console은 iframe을 사용하므로 X-Frame-Options 설정 필요
                 .headers(headers -> headers
@@ -44,7 +68,12 @@ public class DevSecurityConfig {
                 )
                 // H2 Console 사용 시 CSRF 보호를 꺼야 함
                 .csrf(csrf -> csrf
+                        // H2 Console 허용
                         .ignoringRequestMatchers(PathRequest.toH2Console())
+                        // API 요청에 대해서는 CSRF 보호 비활성화 (POST 403 에러 해결)
+                        .ignoringRequestMatchers("/api/**")
+                        // 개발 환경에서는 /admin/** POST 요청도 CSRF 비활성화 (편의상)
+                        .ignoringRequestMatchers("/admin/**")
                 );
 
         return http.build();

@@ -13,7 +13,7 @@ header {
 .card-grid {
   display: grid;
   /* 반응형 그리드: 화면 크기에 따라 열 개수 자동 조절 */
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 20px;
   max-width: 1200px;
   margin: 0 auto;
@@ -72,6 +72,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px; /* Rarity와 Price 사이 간격 추가 */
   margin-top: 10px;
 }
 
@@ -82,11 +83,17 @@ header {
   border-radius: 4px;
   font-size: 0.75em;
   font-weight: bold;
+  white-space: nowrap; /* Rarity 텍스트 줄바꿈 방지 */
+  flex-shrink: 0; /* 축소 방지 */
 }
 
 .price {
   font-weight: bold;
   color: #d97706;
+  white-space: nowrap; /* 가격 텍스트 줄바꿈 방지 */
+  text-align: right; /* 오른쪽 정렬 */
+  flex-shrink: 0; /* 축소 방지 */
+  min-width: fit-content; /* 내용에 맞는 최소 너비 */
 }
 
 .empty-state {

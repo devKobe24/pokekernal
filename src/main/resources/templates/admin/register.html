@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin - Register Card</title>
+    <link rel="stylesheet" href="/css/card-list.css" />
+    <style>
+      .admin-container {
+        max-width: 600px;
+        margin: 50px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+      .price-input-wrapper {
+        position: relative;
+      }
+      .price-input-wrapper::before {
+        content: '₩';
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+        font-weight: bold;
+        z-index: 1;
+      }
+      .price-input-wrapper input {
+        padding-left: 30px;
+      }
+      .help-text {
+        font-size: 0.85em;
+        color: #888;
+        margin-top: 5px;
+      }
+      .btn-submit {
+        width: 100%;
+        padding: 12px;
+        background: #4338ca;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1em;
+        cursor: pointer;
+      }
+      .btn-submit:hover {
+        background: #3730a3;
+      }
+      .alert {
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+      .alert-success {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      /* 로딩 오버레이 */
+      .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+      }
+      .loading-overlay.active {
+        display: flex;
+      }
+      .loading-content {
+        background: white;
+        padding: 40px;
+        border-radius: 10px;
+        text-align: center;
+        max-width: 400px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      }
+      .loading-spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #4338ca;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .loading-text {
+        font-size: 1.1em;
+        color: #333;
+        margin-bottom: 15px;
+        font-weight: bold;
+      }
+      .loading-progress {
+        width: 100%;
+        height: 8px;
+        background-color: #e0e0e0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 15px;
+      }
+      .loading-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #4338ca, #6366f1);
+        width: 0%;
+        animation: progress 2s ease-in-out infinite;
+        border-radius: 4px;
+      }
+      @keyframes progress {
+        0% { width: 0%; }
+        50% { width: 70%; }
+        100% { width: 100%; }
+      }
+      .loading-steps {
+        margin-top: 15px;
+        font-size: 0.9em;
+        color: #666;
+      }
+      .loading-step {
+        margin: 5px 0;
+        opacity: 0.6;
+      }
+      .loading-step.active {
+        opacity: 1;
+        color: #4338ca;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="text-align: center; margin-bottom: 20px">
+      <a href="/cards" class="back-btn">← Go to Market</a>
+    </div>
+
+    <div class="admin-container">
+      <h2 style="margin-top: 0; text-align: center">
+        카드 수동 등록 (API 연동)
+      </h2>
+      <p style="text-align: center; color: #666; margin-bottom: 30px">
+        카드의 정보를 입력하면 API에서 찾아<br />DB에 자동으로 저장하고 시세를
+        가져옵니다.
+      </p>
+
+      <div
+        th:if="${message}"
+        class="alert alert-success"
+        th:text="${message}"
+      ></div>
+      <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+      <form action="/admin/cards/register" method="post" enctype="multipart/form-data">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <div class="form-group">
+          <label for="name">포켓몬 이름 (Name)</label>
+          <input type="text" id="name" name="name" placeholder="예: Pikachu" />
+          <div class="help-text">* 영문 이름 권장 (한글 검색 불가)</div>
+        </div>
+
+        <div class="form-group">
+          <label for="number">카드 번호 (Number)</label>
+          <input type="text" id="number" name="number" placeholder="예: 025" />
+          <div class="help-text">
+            * 카드 하단의 숫자 (예: 025/165 라면 025 입력)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="setId">세트 ID (Set ID) - 선택사항</label>
+          <input
+            type="text"
+            id="setId"
+            name="setId"
+            placeholder="예: sv3pt5 (151세트)"
+          />
+          <div class="help-text">
+            * 정확도를 위해 세트 ID를 알면 입력하세요.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="imageFile">카드 이미지 업로드 - 선택사항</label>
+          <input
+            type="file"
+            id="imageFile"
+            name="imageFile"
+            accept="image/*"
+            style="padding: 8px;"
+          />
+          <div class="help-text">
+            * 로컬 컴퓨터에서 카드 이미지를 업로드할 수 있습니다. (jpg, png, gif, webp)
+          </div>
+          <div id="imagePreview" style="margin-top: 10px; display: none;">
+            <img id="previewImg" src="" alt="미리보기" style="max-width: 300px; max-height: 300px; border: 1px solid #ddd; border-radius: 5px;" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="salePrice">판매 가격 (원화) - 선택사항</label>
+          <div class="price-input-wrapper">
+            <input
+              type="text"
+              id="salePrice"
+              name="salePrice"
+              placeholder="예: 50000"
+              inputmode="numeric"
+              pattern="[0-9]*"
+            />
+          </div>
+          <div class="help-text">
+            * 판매하고자 하는 가격을 원화(₩)로 입력하세요. 숫자만 입력 가능합니다.
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">카드 검색 및 등록</button>
+      </form>
+
+      <!-- 로딩 오버레이 -->
+      <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+          <div class="loading-spinner"></div>
+          <div class="loading-text">카드 등록 중...</div>
+          <div class="loading-progress">
+            <div class="loading-progress-bar"></div>
+          </div>
+          <div class="loading-steps">
+            <div class="loading-step active" id="step1">✓ 이미지 업로드 중...</div>
+            <div class="loading-step" id="step2">API에서 카드 정보 검색 중...</div>
+            <div class="loading-step" id="step3">데이터베이스에 저장 중...</div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        // 이미지 미리보기 기능
+        document.getElementById('imageFile').addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          const previewDiv = document.getElementById('imagePreview');
+          const previewImg = document.getElementById('previewImg');
+
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              previewImg.src = e.target.result;
+              previewDiv.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          } else {
+            previewDiv.style.display = 'none';
+          }
+        });
+
+        // 판매 가격 입력란: 숫자만 입력 가능하도록 제한
+        document.getElementById('salePrice').addEventListener('input', function(e) {
+          // 숫자가 아닌 문자 제거
+          this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        // 숫자 키만 허용 (백스페이스, 삭제, 탭, 화살표 등은 허용)
+        document.getElementById('salePrice').addEventListener('keydown', function(e) {
+          // 숫자 키 (0-9), 백스페이스, 삭제, 탭, 화살표 키는 허용
+          if (!((e.key >= '0' && e.key <= '9') || 
+                e.key === 'Backspace' || 
+                e.key === 'Delete' || 
+                e.key === 'Tab' || 
+                e.key === 'ArrowLeft' || 
+                e.key === 'ArrowRight' || 
+                e.key === 'ArrowUp' || 
+                e.key === 'ArrowDown')) {
+            e.preventDefault();
+          }
+        });
+
+        // 폼 제출 시 로딩 오버레이 표시
+        document.querySelector('form').addEventListener('submit', function(e) {
+          const loadingOverlay = document.getElementById('loadingOverlay');
+          const submitBtn = document.getElementById('submitBtn');
+          const imageFile = document.getElementById('imageFile');
+          
+          // 폼 유효성 검사
+          const name = document.getElementById('name').value.trim();
+          const number = document.getElementById('number').value.trim();
+          const setId = document.getElementById('setId').value.trim();
+          
+          if (!name && !number && !setId && !imageFile.files.length) {
+            e.preventDefault();
+            alert('최소한 하나의 정보는 입력해야 합니다.');
+            return;
+          }
+          
+          // 로딩 오버레이 표시
+          loadingOverlay.classList.add('active');
+          submitBtn.disabled = true;
+          submitBtn.textContent = '처리 중...';
+          
+          // 단계별 애니메이션
+          setTimeout(function() {
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('step1').textContent = '✓ 이미지 업로드 완료';
+          }, 500);
+          
+          setTimeout(function() {
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('step2').textContent = '✓ API에서 카드 정보 검색 중...';
+          }, 1500);
+          
+          setTimeout(function() {
+            document.getElementById('step3').classList.add('active');
+            document.getElementById('step3').textContent = '✓ 데이터베이스에 저장 중...';
+          }, 3000);
+        });
+      </script>
+    </div>
+  </body>
+</html>

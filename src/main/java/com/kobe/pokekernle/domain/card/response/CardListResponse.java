@@ -2,6 +2,9 @@ package com.kobe.pokekernle.domain.card.response;
 
 import com.kobe.pokekernle.domain.card.entity.Card;
 import com.kobe.pokekernle.domain.card.entity.MarketPrice;
+import com.kobe.pokekernle.domain.card.service.CurrencyConverterService;
+
+import java.math.BigDecimal;
 
 /**
  * packageName    : com.kobe.pokekernle.domain.card.response
@@ -21,13 +24,17 @@ public record CardListResponse(
         String setName,
         String rarity,
         String imageUrl,
-        String priceDisplay // 화면에 보여줄 가격 문자열 (예: "€ 12.50")
+        String priceDisplay // 화면에 보여줄 가격 문자열 (예: "$ 12.50")
 ) {
-    public static CardListResponse from(Card card, MarketPrice marketPrice) {
+    public static CardListResponse from(Card card, MarketPrice marketPrice, CurrencyConverterService currencyConverter) {
         String priceStr = "가격 정보 없음";
         if (marketPrice != null && marketPrice.getPrice() != null) {
-            // 편의상 유로(EUR) 기호 붙임 (데이터에 따라 동적으로 변경 가능)
-            priceStr = "€ " + marketPrice.getPrice();
+            // EUR를 USD로 변환하여 표시
+            BigDecimal usdPrice = currencyConverter.convertToUsd(
+                    marketPrice.getPrice(), 
+                    marketPrice.getCurrency()
+            );
+            priceStr = "$ " + usdPrice;
         }
 
         return new CardListResponse(
@@ -35,7 +42,7 @@ public record CardListResponse(
                 card.getName(),
                 card.getSetName(),
                 card.getRarity().name(), // Enum -> String
-                card.getImageUrl(),
+                card.getDisplayImageUrl(), // 업로드된 이미지 우선 사용
                 priceStr
         );
     }
