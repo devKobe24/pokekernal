@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Login - PokeKernel</title>
+    <link rel="stylesheet" href="/css/card-list.css" />
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin: 0;
+      }
+      .login-container {
+        background: white;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 400px;
+      }
+      .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .login-header h1 {
+        margin: 0;
+        color: #4338ca;
+        font-size: 2em;
+      }
+      .login-header p {
+        color: #666;
+        margin-top: 10px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 1em;
+        transition: border-color 0.3s;
+      }
+      .form-group input:focus {
+        outline: none;
+        border-color: #4338ca;
+      }
+      .btn-login {
+        width: 100%;
+        padding: 12px;
+        background: #4338ca;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      .btn-login:hover {
+        background: #3730a3;
+      }
+      .alert {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+      }
+      .back-link {
+        text-align: center;
+        margin-top: 20px;
+      }
+      .back-link a {
+        color: #666;
+        text-decoration: none;
+        font-size: 0.9em;
+      }
+      .back-link a:hover {
+        color: #4338ca;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="login-header">
+        <h1>🔐 Admin Login</h1>
+        <p>관리자 페이지에 접근하려면 로그인하세요</p>
+      </div>
+
+      <div th:if="${param.error}" class="alert alert-error">
+        이메일 또는 비밀번호가 올바르지 않습니다.
+      </div>
+      <div th:if="${param.logout}" class="alert" style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;">
+        로그아웃되었습니다.
+      </div>
+
+      <form th:action="@{/admin/login}" method="post">
+        <div class="form-group">
+          <label for="email">이메일</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="admin@example.com"
+            required
+            autofocus
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">비밀번호</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="비밀번호를 입력하세요"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn-login">로그인</button>
+      </form>
+
+      <div class="back-link">
+        <a href="/cards">← 카드 목록으로 돌아가기</a>
+      </div>
+    </div>
+  </body>
+</html>
+

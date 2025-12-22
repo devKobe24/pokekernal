@@ -37,45 +37,142 @@ public class CardPriceSyncService {
     /**
      * 특정 검색 조건(Query)에 해당하는 카드들의 최신 시세를 동기화합니다.
      * MVP 규칙: 최신 시세 1개만 유지 (UPDATE)
+     * 페이지네이션을 지원하여 모든 데이터를 수집합니다.
      */
     @Transactional
     public void syncLatestPrices(String query) {
+        syncLatestPrices(query, null);
+    }
+
+    /**
+     * 특정 검색 조건(Query)에 해당하는 카드들의 최신 시세를 동기화합니다.
+     * 업로드된 이미지 URL이 있으면 첫 번째로 매칭되는 카드에 적용합니다.
+     */
+    @Transactional
+    public void syncLatestPrices(String query, String uploadedImageUrl) {
+        syncLatestPrices(query, uploadedImageUrl, null);
+    }
+
+    /**
+     * 특정 검색 조건(Query)에 해당하는 카드들의 최신 시세를 동기화합니다.
+     * 업로드된 이미지 URL과 판매 가격이 있으면 첫 번째로 매칭되는 카드에 적용합니다.
+     */
+    @Transactional
+    public void syncLatestPrices(String query, String uploadedImageUrl, Long salePrice) {
         log.info("[BATCH] 시세 데이터 동기화 시작. Query: {}", query);
 
-        PokemonTcgApiResponse response = dataProvider.fetchCardsBySet(query);
-
-        if (response == null || response.getData() == null || response.getData().isEmpty()) {
-            log.warn("[BATCH] 수집된 데이터가 없습니다.");
-            return;
+        int totalSuccessCount = 0;
+        int totalFailCount = 0;
+        int currentPage = 1;
+        int pageSize = 5; // 타임아웃 방지를 위해 최소 페이지 크기 사용 (응답 속도 최적화)
+        boolean hasMorePages = true;
+        
+        // 광범위한 쿼리 경고
+        if (query.contains("name:") && !query.contains("set.id:")) {
+            log.warn("[BATCH] 광범위한 쿼리 감지: {}. 특정 세트로 제한하는 것을 권장합니다. (예: name:pikachu set.id:sv3pt5)", query);
         }
 
-        int successCount = 0;
-        int failCount = 0;
-
-        for (PokemonCardDto dto : response.getData()) {
+        while (hasMorePages) {
+            log.info("[BATCH] 페이지 {} 처리 중... (pageSize: {})", currentPage, pageSize);
+            
+            // 페이지 요청 간 최소 딜레이 (Rate limiting 방지, 첫 페이지는 딜레이 없음)
+            if (currentPage > 1) {
+                try {
+                    Thread.sleep(500); // 0.5초 대기로 단축 (API rate limit 고려)
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.warn("[BATCH] 딜레이 중 인터럽트 발생");
+                }
+            }
+            
+            PokemonTcgApiResponse response;
             try {
-                processCardData(dto);
-                successCount++;
+                response = dataProvider.fetchCardsBySet(query, currentPage, pageSize);
             } catch (Exception e) {
-                failCount++;
-                // 에러 로그를 상세하게 찍어서 원인을 파악합니다.
-                log.error("[BATCH] 카드 처리 실패 - ID: {}, Name: {}", dto.getId(), dto.getName());
-                log.error("에러 원인:", e); // 스택 트레이스 출력
+                log.error("[BATCH] 페이지 {} 요청 실패. 다음 페이지로 진행하지 않습니다. - Query: {}", 
+                        currentPage, query, e);
+                break; // 현재 페이지 실패 시 중단
+            }
+
+            if (response == null || response.getData() == null || response.getData().isEmpty()) {
+                log.info("[BATCH] 페이지 {}에 데이터가 없습니다. 수집 종료.", currentPage);
+                break;
+            }
+
+            int pageSuccessCount = 0;
+            int pageFailCount = 0;
+
+            for (PokemonCardDto dto : response.getData()) {
+                try {
+                    // 업로드된 이미지 URL과 판매 가격이 있고 아직 적용되지 않았다면 첫 번째 카드에 적용
+                    boolean isFirstCard = (pageSuccessCount == 0 && currentPage == 1);
+                    String imageUrlToApply = (uploadedImageUrl != null && !uploadedImageUrl.isBlank() && isFirstCard) 
+                            ? uploadedImageUrl 
+                            : null;
+                    Long salePriceToApply = (salePrice != null && isFirstCard) ? salePrice : null;
+                    processCardData(dto, imageUrlToApply, salePriceToApply);
+                    pageSuccessCount++;
+                } catch (Exception e) {
+                    pageFailCount++;
+                    // 에러 로그를 상세하게 찍어서 원인을 파악합니다.
+                    log.error("[BATCH] 카드 처리 실패 - ID: {}, Name: {}", dto.getId(), dto.getName());
+                    log.error("에러 원인:", e); // 스택 트레이스 출력
+                }
+            }
+
+            totalSuccessCount += pageSuccessCount;
+            totalFailCount += pageFailCount;
+
+            log.info("[BATCH] 페이지 {} 완료. 성공: {}, 실패: {}", currentPage, pageSuccessCount, pageFailCount);
+
+            // 다음 페이지가 있는지 확인
+            Integer totalCount = response.getTotalCount();
+            Integer count = response.getCount();
+            int processedCount = currentPage * pageSize;
+
+            if (totalCount != null && processedCount >= totalCount) {
+                hasMorePages = false;
+                log.info("[BATCH] 모든 페이지 처리 완료. 총 {}개 중 {}개 처리됨", totalCount, processedCount);
+            } else if (count == null || count < pageSize) {
+                // 현재 페이지의 데이터가 pageSize보다 적으면 마지막 페이지
+                hasMorePages = false;
+                log.info("[BATCH] 마지막 페이지 도달");
+            } else {
+                currentPage++;
             }
         }
 
-        log.info("[BATCH] 시세 동기화 완료. 처리 건수: {}", successCount);
-        log.info("[BATCH] 시세 동기화 완료. 성공: {}, 실패: {}", successCount, failCount);
+        log.info("[BATCH] 시세 동기화 완료. 총 성공: {}, 총 실패: {}", totalSuccessCount, totalFailCount);
     }
 
     private void processCardData(PokemonCardDto dto) {
+        processCardData(dto, null, null);
+    }
+
+    private void processCardData(PokemonCardDto dto, String uploadedImageUrl) {
+        processCardData(dto, uploadedImageUrl, null);
+    }
+
+    private void processCardData(PokemonCardDto dto, String uploadedImageUrl, Long salePrice) {
         // 1. 카드 정보 동기 (없으면 생성, 있으면 조회)
         Card card = cardRepository.findByExternalId(dto.getId())
-                .orElseGet(() -> createNewCard(dto));
+                .orElseGet(() -> createNewCard(dto, uploadedImageUrl, salePrice));
 
         // 카드가 새로 생성되었는데 ID가 없다면 save 필요
         if (card.getId() == null) {
             card = cardRepository.save(card);
+        }
+
+        // 업로드된 이미지 URL이 있으면 설정 (기존 카드도 업데이트)
+        if (uploadedImageUrl != null && !uploadedImageUrl.isBlank()) {
+            card.setUploadedImageUrl(uploadedImageUrl);
+            log.info("[BATCH] 업로드된 이미지 적용 - Card ID: {}, Image URL: {}", card.getId(), uploadedImageUrl);
+        }
+
+        // 판매 가격이 있으면 설정 (기존 카드도 업데이트)
+        if (salePrice != null) {
+            card.setSalePrice(salePrice);
+            log.info("[BATCH] 판매 가격 적용 - Card ID: {}, Sale Price: ₩{}", card.getId(), salePrice);
         }
 
         // 2. 시세 정보 동기화
@@ -114,17 +211,32 @@ public class CardPriceSyncService {
     }
 
     private Card createNewCard(PokemonCardDto dto) {
-        // [수정] Null-Safe 로직 적용: API 응답의 일부 필드가 비어있어도 죽지 않도록 방어
-        String setName = (dto.getSet() != null) ? dto.getSet().getName() : "Unknown Set";
-        String imageUrl = (dto.getImages() != null) ? dto.getImages().getLarge() : null;
+        return createNewCard(dto, null, null);
+    }
+
+    private Card createNewCard(PokemonCardDto dto, String uploadedImageUrl) {
+        return createNewCard(dto, uploadedImageUrl, null);
+    }
+
+    private Card createNewCard(PokemonCardDto dto, String uploadedImageUrl, Long salePrice) {
+        // [최적화] API에서 최소한의 데이터만 가져오므로, 없는 필드는 기본값 사용
+        // 필요한 필드: id, name, rarity, cardmarket.prices.trendPrice
+        // 선택적 필드: set.name, number, images (없으면 null 또는 기본값 사용)
+        String setName = (dto.getSet() != null && dto.getSet().getName() != null) 
+                ? dto.getSet().getName() 
+                : "Unknown Set";
+        String number = dto.getNumber(); // null 가능
+        String imageUrl = null; // 이미지는 업로드된 이미지 사용하므로 API 이미지 불필요
 
         return Card.builder()
                 .externalId(dto.getId())
                 .name(dto.getName())
-                .setName(dto.getSet().getName())
-                .number(dto.getNumber())
+                .setName(setName)
+                .number(number) // null 가능
                 .rarity(parseRarity(dto.getRarity()))
-                .imageUrl(dto.getImages().getLarge())
+                .imageUrl(imageUrl) // null (업로드된 이미지 사용)
+                .uploadedImageUrl(uploadedImageUrl)
+                .salePrice(salePrice) // 희망 판매 가격 (원화)
                 .build();
     }
 

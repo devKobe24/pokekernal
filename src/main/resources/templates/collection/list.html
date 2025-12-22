@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Collection - PokeKernel</title>
+    <link rel="stylesheet" href="/css/card-list.css" />
+    <style>
+      .table-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+      th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #444;
+      }
+      tr:hover {
+        background-color: #fcfcfc;
+      }
+      .thumb {
+        width: 50px;
+        height: 70px;
+        object-fit: contain;
+        border-radius: 4px;
+        background: #eee;
+      }
+      .gain {
+        color: #16a34a;
+        font-weight: bold;
+      } /* 수익 (초록) */
+      .loss {
+        color: #dc2626;
+        font-weight: bold;
+      } /* 손실 (빨강) */
+      .condition-badge {
+        background: #eef2ff;
+        color: #4338ca;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+      }
+      /* 요약 카드 스타일 */
+      .summary-card {
+        display: flex;
+        justify-content: space-around;
+        background: #fff;
+        padding: 20px;
+        margin: 20px auto;
+        max-width: 1200px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      }
+      .summary-item {
+        text-align: center;
+      }
+      .summary-label {
+        display: block;
+        color: #666;
+        font-size: 0.9em;
+        margin-bottom: 5px;
+      }
+      .summary-value {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #333;
+      }
+      .summary-gain {
+        color: #16a34a;
+      }
+      .summary-loss {
+        color: #dc2626;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      style="
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      "
+    >
+      <a href="/cards" class="back-btn">← Card Market</a>
+      <h2>My Inventory</h2>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-item">
+        <span class="summary-label">Total Cost</span>
+        <span class="summary-value" th:text="${summary.totalPurchasePrice}"
+          >€ 0.00</span
+        >
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Current Value</span>
+        <span class="summary-value" th:text="${summary.totalCurrentValue}"
+          >€ 0.00</span
+        >
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Total Profit</span>
+        <span
+          class="summary-value"
+          th:classappend="${summary.isGain} ? 'summary-gain' : 'summary-loss'"
+          th:text="${summary.totalProfit}"
+          >+ € 0.00</span
+        >
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Return</span>
+        <span
+          class="summary-value"
+          th:classappend="${summary.isGain} ? 'summary-gain' : 'summary-loss'"
+          th:text="${summary.totalProfitRate}"
+          >+ 0.00%</span
+        >
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Condition</th>
+            <th>Purchase Price</th>
+            <th>Market Price</th>
+            <th>Profit/Loss</th>
+            <th>Memo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            th:each="item : ${collection}"
+            th:onclick="|location.href='@{/cards/{id}(id=${item.cardId})}'|"
+            style="cursor: pointer"
+          >
+            <td><img th:src="${item.imageUrl}" class="thumb" /></td>
+            <td th:text="${item.cardName}">Pikachu</td>
+            <td>
+              <span class="condition-badge" th:text="${item.condition}"
+                >NEAR_MINT</span
+              >
+            </td>
+            <td th:text="${item.purchasePrice}">€ 10.00</td>
+            <td th:text="${item.currentPrice}" style="font-weight: bold">
+              € 12.00
+            </td>
+            <td>
+              <div th:class="${item.isGain} ? 'gain' : 'loss'">
+                <span th:text="${item.profitAmount}">+ € 2.00</span>
+                <br />
+                <small th:text="${item.profitRate}">(+20%)</small>
+              </div>
+            </td>
+            <td th:text="${item.memo}" style="color: #888; font-size: 0.9em">
+              직거래
+            </td>
+          </tr>
+
+          <tr th:if="${collection.isEmpty()}">
+            <td
+              colspan="7"
+              style="text-align: center; padding: 50px; color: #888"
+            >
+              아직 수집한 카드가 없습니다.
+              <a href="/cards" style="color: #4338ca">카드를 찾아보세요!</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

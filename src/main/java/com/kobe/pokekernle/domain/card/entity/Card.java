@@ -45,17 +45,46 @@ public class Card extends BaseTimeEntity {
     @Column(length = 1000)
     private String imageUrl; // 카드 이미지 URL (S3 또는 외부 링크)
 
+    @Column(length = 1000)
+    private String uploadedImageUrl; // 사용자가 업로드한 이미지 URL (우선 사용)
+
+    @Column(precision = 12, scale = 0)
+    private Long salePrice; // 희망 판매 가격 (원화, KRW)
+
     // 외부 API(예: TCGPlayer)와의 연동을 위한 ID
     @Column(unique = true)
     private String externalId;
 
     @Builder
-    public Card(String name, String setName, String number, Rarity rarity, String imageUrl, String externalId) {
+    public Card(String name, String setName, String number, Rarity rarity, String imageUrl, String uploadedImageUrl, Long salePrice, String externalId) {
         this.name = name;
         this.setName = setName;
         this.number = number;
         this.rarity = rarity;
         this.imageUrl = imageUrl;
+        this.uploadedImageUrl = uploadedImageUrl;
+        this.salePrice = salePrice;
         this.externalId = externalId;
+    }
+
+    /**
+     * 업로드된 이미지가 있으면 우선 사용, 없으면 API 이미지 사용
+     */
+    public String getDisplayImageUrl() {
+        return (uploadedImageUrl != null && !uploadedImageUrl.isBlank()) ? uploadedImageUrl : imageUrl;
+    }
+
+    /**
+     * 업로드된 이미지 URL 설정
+     */
+    public void setUploadedImageUrl(String uploadedImageUrl) {
+        this.uploadedImageUrl = uploadedImageUrl;
+    }
+
+    /**
+     * 희망 판매 가격 설정
+     */
+    public void setSalePrice(Long salePrice) {
+        this.salePrice = salePrice;
     }
 }

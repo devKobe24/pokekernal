@@ -34,6 +34,23 @@
         color: #666;
         font-weight: bold;
       }
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s;
+      }
+      .btn-primary {
+        background-color: #4338ca;
+        color: white;
+      }
+      .btn-primary:hover {
+        background-color: #3730a3;
+      }
     </style>
   </head>
   <body>
@@ -56,9 +73,24 @@
         </p>
 
         <h2 style="color: #d97706; margin-top: 20px">
-          <span th:text="${card.currency}">€</span>
+          <span th:text="${card.currency}">$</span>
           <span th:text="${card.currentPrice}">12.50</span>
         </h2>
+
+        <div th:if="${card.salePrice != null}" style="margin-top: 15px; padding: 15px; background-color: #f0f9ff; border-radius: 8px; border-left: 4px solid #4338ca;">
+          <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">희망 판매 가격</div>
+          <div style="font-size: 1.3em; font-weight: bold; color: #4338ca;">
+            ₩<span th:text="${#numbers.formatInteger(card.salePrice, 0, 'COMMA')}">50,000</span>
+          </div>
+        </div>
+
+        <a
+          th:href="@{'mailto:pokekernal24@gmail.com?subject=' + ${card.name} + ' 카드 문의&amp;body=' + ${card.name} + ' (' + ${card.setName} + ') 카드에 대해 문의드립니다.%0D%0A%0D%0A카드 정보:%0D%0A- 이름: ' + ${card.name} + '%0D%0A- 세트: ' + ${card.setName} + '%0D%0A- 등급: ' + ${card.rarity} + '%0D%0A- 현재 가격: ' + ${card.currency} + ' ' + ${card.currentPrice}}"
+          class="btn btn-primary"
+          style="margin-top: 15px"
+        >
+          + Direct Message
+        </a>
 
         <div class="chart-container">
           <canvas id="priceChart"></canvas>
@@ -110,6 +142,7 @@
               }
           });
       }
+
     </script>
   </body>
 </html>

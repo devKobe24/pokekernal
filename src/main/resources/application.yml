@@ -24,4 +24,15 @@ spring:
   config:
     import: optional:aws-secretsmanager:pokekernel-secrets
 
+# HTTP 타임아웃 설정 (대량 데이터 수집 시 타임아웃 방지)
+server:
+  tomcat:
+    connection-timeout: 300000 # 5분 (밀리초)
+  http2:
+    enabled: false
+
+# 환율 설정 (EUR to USD)
+currency:
+  exchange-rate:
+    eur-to-usd: 1.10 # 1 EUR = 1.10 USD (환율이 변경되면 이 값을 수정하세요)
 
