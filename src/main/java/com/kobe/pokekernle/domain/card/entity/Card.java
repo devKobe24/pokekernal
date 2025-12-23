@@ -87,4 +87,32 @@ public class Card extends BaseTimeEntity {
     public void setSalePrice(Long salePrice) {
         this.salePrice = salePrice;
     }
+
+    /**
+     * 카드 정보 수정
+     */
+    public void updateCard(String name, String setName, String number, Rarity rarity, 
+                          String imageUrl, String uploadedImageUrl, Long salePrice) {
+        if (name != null && !name.isBlank()) {
+            this.name = name;
+        }
+        if (setName != null && !setName.isBlank()) {
+            this.setName = setName;
+        }
+        if (number != null) {
+            this.number = number;
+        }
+        if (rarity != null) {
+            this.rarity = rarity;
+        }
+        if (imageUrl != null) {
+            this.imageUrl = imageUrl;
+        }
+        if (uploadedImageUrl != null) {
+            this.uploadedImageUrl = uploadedImageUrl;
+        }
+        if (salePrice != null) {
+            this.salePrice = salePrice;
+        }
+    }
 }

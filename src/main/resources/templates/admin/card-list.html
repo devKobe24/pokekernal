@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin - Card List</title>
+    <link rel="stylesheet" href="/css/card-list.css" />
+    <style>
+      .admin-header {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .admin-header h1 {
+        margin: 0;
+        color: #4338ca;
+      }
+      .admin-actions {
+        display: flex;
+        gap: 10px;
+      }
+      .admin-btn {
+        padding: 10px 20px;
+        background: #4338ca;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: background-color 0.3s;
+      }
+      .admin-btn:hover {
+        background: #3730a3;
+      }
+      .admin-btn.secondary {
+        background: #6b7280;
+      }
+      .admin-btn.secondary:hover {
+        background: #4b5563;
+      }
+      .stats-bar {
+        max-width: 1200px;
+        margin: 0 auto 30px;
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .stats-info {
+        font-size: 1.1em;
+        color: #666;
+      }
+      .stats-info b {
+        color: #4338ca;
+        font-size: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="admin-header">
+      <h1>📋 관리자 - 카드 목록</h1>
+      <div class="admin-actions">
+        <a href="/admin/cards/register" class="admin-btn">카드 등록</a>
+        <a href="/cards" class="admin-btn secondary">일반 목록 보기</a>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stats-info">
+        총 등록된 카드: <b th:text="${cards.size()}">0</b>개
+      </div>
+    </div>
+
+    <main>
+      <div class="card-grid">
+        <div
+          class="card-item"
+          th:each="card : ${cards}"
+        >
+          <div class="card-image" th:onclick="|location.href='@{/cards/{id}(id=${card.id})}'|" style="cursor: pointer;">
+            <img th:src="${card.imageUrl}" th:alt="${card.name}" />
+          </div>
+          <div class="card-info">
+            <h3 th:text="${card.name}" th:onclick="|location.href='@{/cards/{id}(id=${card.id})}'|" style="cursor: pointer;">Card Name</h3>
+            <p class="set-name" th:text="${card.setName}">Set Name</p>
+            <div class="meta">
+              <span class="rarity" th:text="${card.rarity}">Rarity</span>
+              <span class="price" th:text="${card.priceDisplay}">Price</span>
+            </div>
+            <div class="admin-actions" style="margin-top: 10px; display: flex; gap: 8px; justify-content: center;">
+              <a th:href="@{/admin/cards/edit/{id}(id=${card.id})}" 
+                 class="btn-edit" 
+                 style="padding: 6px 12px; background: #4338ca; color: white; text-decoration: none; border-radius: 5px; font-size: 0.85em;"
+                 onclick="event.stopPropagation();">수정</a>
+              <form th:action="@{/admin/cards/delete/{id}(id=${card.id})}" 
+                    method="post" 
+                    style="display: inline;"
+                    onsubmit="return confirm('정말 삭제하시겠습니까?');"
+                    onclick="event.stopPropagation();">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" 
+                        class="btn-delete" 
+                        style="padding: 6px 12px; background: #dc2626; color: white; border: none; border-radius: 5px; font-size: 0.85em; cursor: pointer;">
+                  삭제
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div th:if="${cards.isEmpty()}" class="empty-state">
+        <p>등록된 카드가 없습니다. "카드 등록" 버튼을 클릭하여 카드를 등록하세요.</p>
+      </div>
+    </main>
+
+    <script src="/js/app.bundle.js"></script>
+  </body>
+</html>
+
