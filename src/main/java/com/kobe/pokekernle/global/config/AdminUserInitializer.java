@@ -13,12 +13,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 개발 환경에서 관리자 계정을 자동으로 생성하는 초기화 클래스
- * application-dev.yml의 설정값을 읽어서 관리자 계정을 생성합니다.
+ * 관리자 계정을 자동으로 생성하는 초기화 클래스
+ * - 개발 환경: application-dev.yml의 설정값 사용
+ * - 운영 환경: AWS Secrets Manager의 설정값 사용 (admin.email, admin.password, admin.nickname)
  */
 @Slf4j
 @Component
-@Profile("dev")
 @RequiredArgsConstructor
 public class AdminUserInitializer implements CommandLineRunner {
 
@@ -37,6 +37,11 @@ public class AdminUserInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
+        log.info("[ADMIN INIT] 관리자 계정 초기화 시작");
+        log.info("[ADMIN INIT]   이메일: {}", adminEmail);
+        log.info("[ADMIN INIT]   비밀번호 길이: {} (값은 로그에 표시하지 않음)", adminPassword != null ? adminPassword.length() : 0);
+        log.info("[ADMIN INIT]   닉네임: {}", adminNickname);
+
         // 이미 관리자 계정이 있는지 확인
         if (userRepository.findByEmail(adminEmail).isPresent()) {
             log.info("[ADMIN INIT] 관리자 계정이 이미 존재합니다: {}", adminEmail);
@@ -44,18 +49,27 @@ public class AdminUserInitializer implements CommandLineRunner {
         }
 
         // 관리자 계정 생성
+        if (adminEmail == null || adminEmail.isEmpty()) {
+            log.warn("[ADMIN INIT] 관리자 이메일이 설정되지 않았습니다. 계정 생성을 건너뜁니다.");
+            return;
+        }
+
+        if (adminPassword == null || adminPassword.isEmpty()) {
+            log.warn("[ADMIN INIT] 관리자 비밀번호가 설정되지 않았습니다. 계정 생성을 건너뜁니다.");
+            return;
+        }
+
         String encodedPassword = passwordEncoder.encode(adminPassword);
         User admin = User.builder()
                 .email(adminEmail)
                 .password(encodedPassword)
-                .nickname(adminNickname)
+                .nickname(adminNickname != null ? adminNickname : "Administrator")
                 .role(Role.ADMIN)
                 .build();
 
         userRepository.save(admin);
         log.info("[ADMIN INIT] 관리자 계정이 생성되었습니다:");
         log.info("[ADMIN INIT]   이메일: {}", adminEmail);
-        log.info("[ADMIN INIT]   비밀번호: {} (application-dev.yml에서 변경 가능)", adminPassword);
         log.info("[ADMIN INIT]   닉네임: {}", adminNickname);
     }
 }
