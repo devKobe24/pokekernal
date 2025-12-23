@@ -235,7 +235,16 @@ public class CardPriceSyncService {
                 ? dto.getSet().getName() 
                 : "Unknown Set";
         String number = dto.getNumber(); // null 가능
-        String imageUrl = null; // 이미지는 업로드된 이미지 사용하므로 API 이미지 불필요
+        
+        // API에서 이미지 URL 가져오기 (large 우선, 없으면 small)
+        String imageUrl = null;
+        if (dto.getImages() != null) {
+            if (dto.getImages().getLarge() != null && !dto.getImages().getLarge().isBlank()) {
+                imageUrl = dto.getImages().getLarge();
+            } else if (dto.getImages().getSmall() != null && !dto.getImages().getSmall().isBlank()) {
+                imageUrl = dto.getImages().getSmall();
+            }
+        }
 
         return Card.builder()
                 .externalId(dto.getId())
@@ -243,8 +252,8 @@ public class CardPriceSyncService {
                 .setName(setName)
                 .number(number) // null 가능
                 .rarity(parseRarity(dto.getRarity()))
-                .imageUrl(imageUrl) // null (업로드된 이미지 사용)
-                .uploadedImageUrl(uploadedImageUrl)
+                .imageUrl(imageUrl) // API에서 가져온 이미지 URL
+                .uploadedImageUrl(uploadedImageUrl) // 업로드된 이미지가 있으면 우선 사용
                 .salePrice(salePrice) // 희망 판매 가격 (원화)
                 .build();
     }

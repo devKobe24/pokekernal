@@ -69,9 +69,17 @@ public class Card extends BaseTimeEntity {
 
     /**
      * 업로드된 이미지가 있으면 우선 사용, 없으면 API 이미지 사용
+     * 이미지가 없으면 기본 플레이스홀더 반환
      */
     public String getDisplayImageUrl() {
-        return (uploadedImageUrl != null && !uploadedImageUrl.isBlank()) ? uploadedImageUrl : imageUrl;
+        if (uploadedImageUrl != null && !uploadedImageUrl.isBlank()) {
+            return uploadedImageUrl;
+        }
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            return imageUrl;
+        }
+        // 이미지가 없으면 기본 플레이스홀더 반환
+        return "/images/pokemon-card.png";
     }
 
     /**

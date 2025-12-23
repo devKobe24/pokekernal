@@ -24,7 +24,9 @@
           th:onclick="|location.href='@{/cards/{id}(id=${card.id})}'|"
         >
           <div class="card-image">
-            <img th:src="${card.imageUrl}" th:alt="${card.name}" />
+            <img th:src="${card.imageUrl != null and !card.imageUrl.isEmpty() ? card.imageUrl : '/images/pokemon-card.png'}" 
+                 th:alt="${card.name}" 
+                 onerror="this.src='/images/pokemon-card.png'; this.onerror=null;" />
           </div>
           <div class="card-info">
             <h3 th:text="${card.name}">Card Name</h3>

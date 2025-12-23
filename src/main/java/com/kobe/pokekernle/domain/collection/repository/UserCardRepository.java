@@ -19,4 +19,7 @@ import java.util.List;
 public interface UserCardRepository extends JpaRepository<UserCard, Long> {
     // 특정 유저의 보유 카드 목록 조회 (최신순)
     List<UserCard> findAllByUserIdOrderByCreatedAtDesc(Long userId);
+    
+    // 특정 카드에 대한 UserCard 조회
+    List<UserCard> findByCard(com.kobe.pokekernle.domain.card.entity.Card card);
 }
