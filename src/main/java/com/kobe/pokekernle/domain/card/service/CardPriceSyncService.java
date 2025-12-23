@@ -164,15 +164,24 @@ public class CardPriceSyncService {
         }
 
         // 업로드된 이미지 URL이 있으면 설정 (기존 카드도 업데이트)
+        boolean needsSave = false;
         if (uploadedImageUrl != null && !uploadedImageUrl.isBlank()) {
             card.setUploadedImageUrl(uploadedImageUrl);
+            needsSave = true;
             log.info("[BATCH] 업로드된 이미지 적용 - Card ID: {}, Image URL: {}", card.getId(), uploadedImageUrl);
         }
 
         // 판매 가격이 있으면 설정 (기존 카드도 업데이트)
         if (salePrice != null) {
             card.setSalePrice(salePrice);
+            needsSave = true;
             log.info("[BATCH] 판매 가격 적용 - Card ID: {}, Sale Price: ₩{}", card.getId(), salePrice);
+        }
+
+        // 변경사항이 있으면 명시적으로 저장
+        if (needsSave) {
+            cardRepository.save(card);
+            log.info("[BATCH] 카드 정보 업데이트 완료 - Card ID: {}", card.getId());
         }
 
         // 2. 시세 정보 동기화
