@@ -32,12 +32,25 @@ public class ProdSecurityConfig {
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 
                         // 2. 메인 페이지 및 로그인 페이지 허용
-                        .requestMatchers("/", "login", "/error").permitAll()
+                        .requestMatchers("/", "/login", "/error").permitAll()
 
-                        // 3. 관리자 페이지는 ADMIN 권한만 접근 가능 (추후 기능 구현 시 사용)
+                        // 3. 카드 목록 및 상세 페이지 허용
+                        .requestMatchers("/cards/**").permitAll()
+
+                        // 4. 컬렉션 페이지 허용
+                        .requestMatchers("/collection/**").permitAll()
+
+                        // 5. API 요청 허용
+                        .requestMatchers("/api/**").permitAll()
+
+                        // 6. 업로드된 이미지 접근 허용
+                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/images/**").permitAll()
+
+                        // 7. 관리자 페이지는 ADMIN 권한만 접근 가능
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        // 4. 그 외 모든 요청은 인증 필요
+                        // 8. 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
                 // 운영 환경에서는 폼 로그인 기능을 활성화
