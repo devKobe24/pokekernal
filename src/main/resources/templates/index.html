@@ -1,13 +1,476 @@
 <!DOCTYPE html>
-<html xmlns:th="http//www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
-    <title>PokeKernel - Main</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Premium Pokémon Card Collection</title>
+    <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700;900&family=Jost:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-blue: #2b4a8f;
+        --deep-blue: #1a2847;
+        --gold: #d4af37;
+        --light-gold: #f4e4b0;
+        --cream: #faf8f3;
+        --shadow: rgba(0, 0, 0, 0.3);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Jost", sans-serif;
+        overflow-x: hidden;
+        background: var(--deep-blue);
+        color: var(--cream);
+      }
+
+      /* Background with Pokemon Card */
+      .background-layer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      .card-pattern {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-image: url("/images/pokemon-card.png");
+        background-size: 400px;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0.15;
+        filter: blur(3px);
+        animation: subtleFloat 20s ease-in-out infinite;
+      }
+
+      .gradient-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+          ellipse at center,
+          rgba(26, 40, 71, 0.7) 0%,
+          rgba(26, 40, 71, 0.9) 50%,
+          rgba(26, 40, 71, 0.95) 100%
+        );
+      }
+
+      .shimmer-effect {
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        top: -50%;
+        left: -50%;
+        background: linear-gradient(
+          45deg,
+          transparent 30%,
+          rgba(212, 175, 55, 0.05) 50%,
+          transparent 70%
+        );
+        animation: shimmer 15s linear infinite;
+      }
+
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%) translateY(-100%) rotate(45deg);
+        }
+        100% {
+          transform: translateX(100%) translateY(100%) rotate(45deg);
+        }
+      }
+
+      @keyframes subtleFloat {
+        0%,
+        100% {
+          transform: translateY(0px) scale(1);
+        }
+        50% {
+          transform: translateY(-20px) scale(1.02);
+        }
+      }
+
+      /* Main Container */
+      .container {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
+
+      /* Header */
+      header {
+        text-align: center;
+        margin-bottom: 4rem;
+        animation: fadeInDown 1.2s ease-out;
+      }
+
+      .logo-text {
+        font-family: "Cinzel", serif;
+        font-size: clamp(3rem, 8vw, 6rem);
+        font-weight: 900;
+        background: linear-gradient(
+          135deg,
+          var(--gold) 0%,
+          var(--light-gold) 50%,
+          var(--gold) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: 0.05em;
+        text-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+        margin-bottom: 0.5rem;
+        animation: goldShine 3s ease-in-out infinite;
+      }
+
+      @keyframes goldShine {
+        0%,
+        100% {
+          filter: brightness(1);
+        }
+        50% {
+          filter: brightness(1.2);
+        }
+      }
+
+      .subtitle {
+        font-family: "Cormorant Garamond", serif;
+        font-size: clamp(1.2rem, 3vw, 1.8rem);
+        font-weight: 300;
+        letter-spacing: 0.3em;
+        color: var(--light-gold);
+        text-transform: uppercase;
+        opacity: 0.9;
+      }
+
+      /* Card Display Area */
+      .card-showcase {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 3rem;
+        max-width: 1400px;
+        width: 100%;
+        margin: 3rem 0;
+        animation: fadeInUp 1.5s ease-out 0.3s backwards;
+      }
+
+      .showcase-card {
+        background: linear-gradient(
+          145deg,
+          rgba(43, 74, 143, 0.2),
+          rgba(26, 40, 71, 0.4)
+        );
+        border: 2px solid rgba(212, 175, 55, 0.3);
+        border-radius: 20px;
+        padding: 2.5rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .showcase-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          transparent,
+          rgba(212, 175, 55, 0.1),
+          transparent
+        );
+        opacity: 0;
+        transition: opacity 0.4s;
+      }
+
+      .showcase-card:hover {
+        transform: translateY(-10px);
+        border-color: var(--gold);
+        box-shadow: 0 20px 60px rgba(212, 175, 55, 0.3);
+      }
+
+      .showcase-card:hover::before {
+        opacity: 1;
+      }
+
+      .card-icon {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        display: block;
+      }
+
+      .card-title {
+        font-family: "Cinzel", serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--gold);
+        margin-bottom: 1rem;
+        letter-spacing: 0.05em;
+      }
+
+      .card-description {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: var(--cream);
+        opacity: 0.9;
+      }
+
+      /* CTA Section */
+      .cta-section {
+        text-align: center;
+        margin-top: 4rem;
+        animation: fadeInUp 1.8s ease-out 0.6s backwards;
+      }
+
+      .cta-button {
+        display: inline-block;
+        font-family: "Cinzel", serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        padding: 1.2rem 3rem;
+        background: linear-gradient(135deg, var(--gold), #b8941f);
+        color: var(--deep-blue);
+        text-decoration: none;
+        border-radius: 50px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .cta-button::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+      }
+
+      .cta-button:hover::before {
+        width: 300px;
+        height: 300px;
+      }
+
+      .cta-button:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(212, 175, 55, 0.6);
+      }
+
+      /* Footer */
+      footer {
+        margin-top: 6rem;
+        text-align: center;
+        font-family: "Cormorant Garamond", serif;
+        font-size: 0.95rem;
+        color: rgba(244, 228, 176, 0.6);
+        letter-spacing: 0.05em;
+        animation: fadeIn 2s ease-out 0.9s backwards;
+      }
+
+      /* Animations */
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-50px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(50px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* Decorative Elements */
+      .decorative-corner {
+        position: fixed;
+        width: 200px;
+        height: 200px;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .corner-top-left {
+        top: 0;
+        left: 0;
+        border-top: 3px solid rgba(212, 175, 55, 0.3);
+        border-left: 3px solid rgba(212, 175, 55, 0.3);
+      }
+
+      .corner-bottom-right {
+        bottom: 0;
+        right: 0;
+        border-bottom: 3px solid rgba(212, 175, 55, 0.3);
+        border-right: 3px solid rgba(212, 175, 55, 0.3);
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .card-showcase {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+
+        header {
+          margin-bottom: 3rem;
+        }
+
+        .cta-section {
+          margin-top: 3rem;
+        }
+      }
+
+      /* Scrollbar Styling */
+      ::-webkit-scrollbar {
+        width: 12px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: var(--deep-blue);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--gold), #b8941f);
+        border-radius: 6px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--gold);
+      }
+    </style>
   </head>
   <body>
-    <h1>Pokemon Card Manager</h1>
-    <p>서버와 프론트엔드 연동 테스트 페이지입니다.</p>
+    <!-- Background Layers -->
+    <div class="background-layer">
+      <div class="card-pattern"></div>
+      <div class="gradient-overlay"></div>
+      <div class="shimmer-effect"></div>
+    </div>
 
-    <script src="/js/app.bundle.js"></script>
+    <!-- Decorative Corners -->
+    <div class="decorative-corner corner-top-left"></div>
+    <div class="decorative-corner corner-bottom-right"></div>
+
+    <!-- Main Content -->
+    <div class="container">
+      <header>
+        <h1 class="logo-text">POKÉMON</h1>
+        <p class="subtitle">Premium Collection</p>
+      </header>
+
+      <div class="card-showcase">
+        <div class="showcase-card" style="animation-delay: 0.4s">
+          <span class="card-icon">🃏</span>
+          <h3 class="card-title">Rare Cards</h3>
+          <p class="card-description">
+            희귀하고 가치 있는 포켓몬 카드를 엄선하여 컬렉션합니다. 각 카드의
+            진품성과 상태를 철저히 검증합니다.
+          </p>
+        </div>
+
+        <div class="showcase-card" style="animation-delay: 0.6s">
+          <span class="card-icon">⭐</span>
+          <h3 class="card-title">Holographic</h3>
+          <p class="card-description">
+            홀로그래픽 특별판과 한정판 카드를 소장합니다. 빛나는 아름다움이 담긴
+            프리미엄 컬렉션입니다.
+          </p>
+        </div>
+
+        <div class="showcase-card" style="animation-delay: 0.8s">
+          <span class="card-icon">🏆</span>
+          <h3 class="card-title">First Edition</h3>
+          <p class="card-description">
+            1판 카드와 초판 에디션을 보유합니다. 포켓몬 역사의 중요한 순간들을
+            간직합니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="cta-section">
+        <a th:href="@{/cards}" class="cta-button">
+          <span style="position: relative; z-index: 1">컬렉션 보기</span>
+        </a>
+      </div>
+
+      <footer>
+        <p>© 2024 Premium Pokémon Collection • Curated with Passion</p>
+      </footer>
+    </div>
+
+    <script>
+      // Parallax effect on mouse move
+      document.addEventListener("mousemove", (e) => {
+        const cards = document.querySelectorAll(".showcase-card");
+        const x = e.clientX / window.innerWidth;
+        const y = e.clientY / window.innerHeight;
+
+        cards.forEach((card, index) => {
+          const speed = (index + 1) * 0.5;
+          const xOffset = (x - 0.5) * speed * 10;
+          const yOffset = (y - 0.5) * speed * 10;
+          card.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+        });
+      });
+
+      // Add sparkle effect on card hover
+      document.querySelectorAll(".showcase-card").forEach((card) => {
+        card.addEventListener("mouseenter", function () {
+          this.style.animation = "none";
+          setTimeout(() => {
+            this.style.animation = "";
+          }, 10);
+        });
+      });
+    </script>
   </body>
 </html>

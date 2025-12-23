@@ -33,7 +33,11 @@ public class DevSecurityConfig {
                         .requestMatchers(PathRequest.toH2Console()).permitAll()
                         // 2. 정적 리소스(js, css, images) 자동 허용
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        // 3. 업로드된 이미지 접근 허용
+                        // 3. 이미지 폴더 명시적 허용
+                        .requestMatchers("/images/**").permitAll()
+                        // 4. favicon 허용
+                        .requestMatchers("/favicon.ico").permitAll()
+                        // 5. 업로드된 이미지 접근 허용
                         .requestMatchers("/uploads/**").permitAll()
                         // 4. 로그인 페이지는 모두 접근 가능
                         .requestMatchers("/admin/login").permitAll()

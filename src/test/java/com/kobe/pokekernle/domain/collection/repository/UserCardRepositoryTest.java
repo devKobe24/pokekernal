@@ -61,7 +61,7 @@ class UserCardRepositoryTest {
                 .name("리자몽")
                 .setName("151")
                 .number("6/165")
-                .rarity(Rarity.RARE_RARE)
+                .rarity(Rarity.RARE)
                 .imageUrl("https://github.com/devKobe24/images2/blob/main/charizard.jpeg?raw=true")
                 .externalId("base1-4")
                 .build();
