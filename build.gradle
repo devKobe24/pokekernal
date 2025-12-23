@@ -12,7 +12,7 @@ description = 'pokekernel'
 
 bootJar {
     archiveBaseName = 'pokekernel-app'
-    archiveVersion = '0.0.6'
+    archiveVersion = '0.0.7'
 }
 
 java {

@@ -153,9 +153,15 @@
           <label for="imageUrl">이미지 URL</label>
           <input type="text" id="imageUrl" name="imageUrl" th:value="${card.imageUrl}" />
           <div class="help-text">외부 이미지 URL을 입력하거나 아래에서 새 이미지를 업로드하세요.</div>
-          <div th:if="${card.getDisplayImageUrl() != null}">
-            <p style="font-size: 0.9em; color: #666; margin-top: 5px;">현재 이미지:</p>
-            <img th:src="${card.getDisplayImageUrl()}" alt="현재 이미지" class="current-image" />
+          <div th:if="${card.uploadedImageUrl != null}" style="margin-top: 10px; padding: 10px; background: #f0f9ff; border-radius: 5px;">
+            <p style="font-size: 0.85em; color: #666; margin-bottom: 5px;"><strong>업로드된 이미지 URL:</strong></p>
+            <p style="font-size: 0.8em; color: #4338ca; word-break: break-all;" th:text="${card.uploadedImageUrl}"></p>
+          </div>
+          <div th:if="${card.getDisplayImageUrl() != null}" style="margin-top: 10px;">
+            <p style="font-size: 0.9em; color: #666; margin-bottom: 5px;"><strong>현재 표시되는 이미지:</strong></p>
+            <img th:src="${card.getDisplayImageUrl()}" alt="현재 이미지" class="current-image" 
+                 onerror="this.onerror=null; this.src='/images/pokemon-card.png';" />
+            <p style="font-size: 0.8em; color: #666; margin-top: 5px; word-break: break-all;" th:text="${card.getDisplayImageUrl()}"></p>
           </div>
         </div>
 

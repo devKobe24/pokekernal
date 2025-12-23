@@ -166,9 +166,13 @@ public class CardPriceSyncService {
         // 업로드된 이미지 URL이 있으면 설정 (기존 카드도 업데이트)
         boolean needsSave = false;
         if (uploadedImageUrl != null && !uploadedImageUrl.isBlank()) {
+            String previousUrl = card.getUploadedImageUrl();
             card.setUploadedImageUrl(uploadedImageUrl);
             needsSave = true;
-            log.info("[BATCH] 업로드된 이미지 적용 - Card ID: {}, Image URL: {}", card.getId(), uploadedImageUrl);
+            log.info("[BATCH] 업로드된 이미지 적용 - Card ID: {}, Name: {}", card.getId(), card.getName());
+            log.info("[BATCH]   이전 URL: {}", previousUrl);
+            log.info("[BATCH]   새 URL: {}", uploadedImageUrl);
+            log.info("[BATCH]   getDisplayImageUrl(): {}", card.getDisplayImageUrl());
         }
 
         // 판매 가격이 있으면 설정 (기존 카드도 업데이트)

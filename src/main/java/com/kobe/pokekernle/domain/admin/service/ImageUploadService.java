@@ -45,7 +45,15 @@ public class ImageUploadService {
     @Autowired
     public void init() {
         this.bucketName = bucketName != null ? bucketName : "";
+        this.region = region != null ? region : "ap-northeast-2";
+        this.cloudFrontDomain = cloudFrontDomain != null ? cloudFrontDomain : "";
         this.useS3 = s3Template != null && !this.bucketName.isEmpty();
+        
+        log.info("[IMAGE UPLOAD SERVICE] 초기화 완료:");
+        log.info("[IMAGE UPLOAD SERVICE]   useS3: {}", useS3);
+        log.info("[IMAGE UPLOAD SERVICE]   bucketName: {}", this.bucketName);
+        log.info("[IMAGE UPLOAD SERVICE]   region: {}", this.region);
+        log.info("[IMAGE UPLOAD SERVICE]   cloudFrontDomain: {}", this.cloudFrontDomain);
     }
 
     /**
@@ -66,21 +74,31 @@ public class ImageUploadService {
         if (useS3 && s3Template != null) {
             // S3로 업로드 (운영 환경)
             String s3Key = "images/" + fileName;
-            s3Template.upload(bucketName, s3Key, file.getInputStream());
+            log.info("[S3 UPLOAD] 업로드 시작 - Bucket: {}, Key: {}", bucketName, s3Key);
+            
+            try {
+                s3Template.upload(bucketName, s3Key, file.getInputStream());
+                log.info("[S3 UPLOAD] 업로드 성공 - Bucket: {}, Key: {}", bucketName, s3Key);
+            } catch (Exception e) {
+                log.error("[S3 UPLOAD] 업로드 실패 - Bucket: {}, Key: {}", bucketName, s3Key, e);
+                throw new IOException("S3 업로드 실패: " + e.getMessage(), e);
+            }
             
             // S3 Public URL 생성
             // CloudFront 도메인이 설정되어 있으면 사용, 없으면 S3 직접 Public URL 사용
             String fileUrl;
-            if (cloudFrontDomain != null && !cloudFrontDomain.isEmpty()) {
+            if (cloudFrontDomain != null && !cloudFrontDomain.isEmpty() && !cloudFrontDomain.isBlank()) {
                 // CloudFront를 통한 URL (권장)
                 fileUrl = "https://" + cloudFrontDomain + "/" + s3Key;
+                log.info("[S3 UPLOAD] CloudFront URL 사용: {}", fileUrl);
             } else {
                 // S3 직접 Public URL (버킷이 public이어야 함)
                 // 형식: https://{bucket-name}.s3.{region}.amazonaws.com/{key}
                 fileUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, s3Key);
+                log.info("[S3 UPLOAD] S3 직접 URL 사용: {}", fileUrl);
             }
             
-            log.info("[S3 UPLOAD] 완료: {}", fileUrl);
+            log.info("[S3 UPLOAD] 최종 URL: {}", fileUrl);
             log.info("[S3 UPLOAD] Bucket: {}, Key: {}, Region: {}", bucketName, s3Key, region);
             return fileUrl;
         } else {
