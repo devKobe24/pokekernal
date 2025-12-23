@@ -10,6 +10,11 @@ group = 'com.kobe.pokekernle'
 version = '0.0.1-SNAPSHOT'
 description = 'pokekernel'
 
+bootJar {
+    archiveBaseName = 'pokekernel-app'
+    archiveVersion = '0.0.1'
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
