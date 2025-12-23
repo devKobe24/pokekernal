@@ -60,7 +60,7 @@
 
     <div class="detail-container">
       <div class="detail-image">
-        <img th:src="${card.getDisplayImageUrl()}" th:alt="${card.name}" onerror="this.src='/images/pokemon-card.png'; this.onerror=null;" />
+        <img th:src="${card.imageUrl != null and !card.imageUrl.isEmpty() ? card.imageUrl : '/images/pokemon-card.png'}" th:alt="${card.name}" onerror="this.src='/images/pokemon-card.png'; this.onerror=null;" />
       </div>
 
       <div class="detail-info">
@@ -109,21 +109,21 @@
 
     <script th:inline="javascript">
       /* Thymeleaf 변수를 JS 변수로 주입 */
-      const historyData = [[${card.priceHistory}]];
+      const historyData = /*[[${card.priceHistory}]]*/ [];
 
       if (historyData && historyData.length > 0) {
           const ctx = document.getElementById('priceChart').getContext('2d');
 
           // 데이터 가공
-          const labels = historyData.map(h => h.date);
-          const dataPoints = historyData.map(h => h.price);
+          const labels = historyData.map(h => h.date ? h.date.toString() : '');
+          const dataPoints = historyData.map(h => h.price ? parseFloat(h.price) : 0);
 
           new Chart(ctx, {
               type: 'line',
               data: {
                   labels: labels,
                   datasets: [{
-                      label: 'Price History (' + [[${card.currency}]] + ')',
+                      label: 'Price History (' + /*[[${card.currency}]]*/ 'USD' + ')',
                       data: dataPoints,
                       borderColor: '#d97706',
                       backgroundColor: 'rgba(217, 119, 6, 0.1)',
