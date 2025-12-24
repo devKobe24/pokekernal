@@ -35,6 +35,16 @@
               <span class="rarity" th:text="${card.rarity}">Rarity</span>
               <span class="price" th:text="${card.priceDisplay}">Price</span>
             </div>
+            <div class="status-info" style="margin-top: 8px; font-size: 0.85em; color: #666;">
+              <div th:if="${card.cardCondition != null}" style="margin-top: 4px;">
+                <span style="font-weight: bold;">카드 상태:</span> 
+                <span th:text="${card.cardConditionDesc != null ? card.cardConditionDesc : card.cardCondition}">-</span>
+              </div>
+              <div th:if="${card.collectionStatus != null}" style="margin-top: 4px;">
+                <span style="font-weight: bold;">컬렉션 상태:</span> 
+                <span th:text="${card.collectionStatusDesc != null ? card.collectionStatusDesc : card.collectionStatus}">-</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
