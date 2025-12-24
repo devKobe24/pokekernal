@@ -12,9 +12,9 @@
 개인 포켓몬 카드 컬렉션을 체계적으로 관리하고,  
 시세를 추적하며, 투자 수익률을 분석할 수 있는 웹 애플리케이션
 
-[기능 소개](#-주요-기능) •
-[빠른 시작](#-빠른-시작) •
-[스크린샷](#-스크린샷) •
+[기능 소개](#-주요-기능)
+[빠른 시작](#-빠른-시작)
+[스크린샷](#-스크린샷)
 [기술 스택](#-기술-스택)
 
 </div>
@@ -723,125 +723,6 @@ erDiagram
 
 ---
 
-## 🚀 배포 가이드
-
-### Docker로 배포
-
-**1. Dockerfile 생성:**
-```dockerfile
-FROM openjdk:17-jdk-slim
-WORKDIR /app
-COPY build/libs/pokekernel-app-0.1.2.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
-```
-
-**2. 이미지 빌드:**
-```bash
-./gradlew bootJar
-docker build -t pokekernel:latest .
-```
-
-**3. 컨테이너 실행:**
-```bash
-docker run -d \
-  -p 8080:8080 \
-  -e SPRING_PROFILES_ACTIVE=prod \
-  --name pokekernel \
-  pokekernel:latest
-```
-
-### AWS EC2 배포
-
-**1. EC2 인스턴스 생성**
-- AMI: Ubuntu 22.04 LTS
-- 인스턴스 타입: t2.micro 이상
-- 보안 그룹: 8080 포트 개방
-
-**2. 애플리케이션 배포:**
-```bash
-# EC2 접속
-ssh -i key.pem ubuntu@your-ec2-ip
-
-# Java 17 설치
-sudo apt update
-sudo apt install openjdk-17-jdk -y
-
-# 애플리케이션 업로드
-scp -i key.pem build/libs/pokekernel-app-0.1.2.jar \
-    ubuntu@your-ec2-ip:~/
-
-# 실행
-nohup java -jar pokekernel-app-0.1.2.jar \
-    --spring.profiles.active=prod &
-```
-
-### GitHub Actions CI/CD
-
-`.github/workflows/deploy.yml`:
-```yaml
-name: Deploy to Production
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-    
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    
-    - name: Build with Gradle
-      run: ./gradlew build -x test
-    
-    - name: Deploy to EC2
-      env:
-        PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-        HOST: ${{ secrets.EC2_HOST }}
-        USER: ubuntu
-      run: |
-        echo "$PRIVATE_KEY" > private_key.pem
-        chmod 600 private_key.pem
-        scp -i private_key.pem -o StrictHostKeyChecking=no \
-            build/libs/*.jar ${USER}@${HOST}:~/
-        ssh -i private_key.pem -o StrictHostKeyChecking=no \
-            ${USER}@${HOST} 'sudo systemctl restart pokekernel'
-```
-
----
-
-## 🤝 기여하기
-
-PokeKernel 프로젝트에 기여해주셔서 감사합니다!
-
-### 기여 프로세스
-
-1. **Fork** 버튼을 클릭하여 저장소를 포크합니다
-2. **Feature 브랜치** 생성: `git checkout -b feature/amazing-feature`
-3. **변경사항 커밋**: `git commit -m 'feat: Add amazing feature'`
-4. **브랜치 푸시**: `git push origin feature/amazing-feature`
-5. **Pull Request** 생성
-
-### 코드 스타일
-
-- Java: Google Java Style Guide
-- 들여쓰기: 4 spaces
-- 줄 길이: 120자 이내
-- JavaDoc 주석 권장
-
----
-
 ## 📝 라이선스
 
 이 프로젝트는 MIT 라이선스 하에 배포됩니다.  
@@ -866,7 +747,7 @@ in the Software without restriction...
 **Kobe**
 
 [![GitHub](https://img.shields.io/badge/GitHub-devKobe24-181717?logo=github)](https://github.com/devKobe24)
-[![Email](https://img.shields.io/badge/Email-Contact-blue?logo=gmail)](mailto:your-email@example.com)
+[![Email](https://img.shields.io/badge/Email-Contact-blue?logo=gmail)](mailto:dev.skyachieve91@gmail.com)
 
 *Made with ❤️ for Pokémon Card Collectors*
 
@@ -874,7 +755,7 @@ in the Software without restriction...
 
 ---
 
-## 🙏 감사의 글
+## 🙏 Ref
 
 이 프로젝트는 다음 오픈소스 기술들을 사용하여 만들어졌습니다:
 
@@ -887,15 +768,13 @@ in the Software without restriction...
 
 ## 📮 문의 및 지원
 
-- 📧 이메일: your-email@example.com
+- 📧 이메일: dev.skyachieve91@gmail.com
 - 🐛 버그 리포트: [GitHub Issues](https://github.com/devKobe24/pokekernel/issues)
 - 💬 기능 제안: [GitHub Discussions](https://github.com/devKobe24/pokekernel/discussions)
 
 ---
 
 <div align="center">
-
-**⭐ 이 프로젝트가 유용하다면 Star를 눌러주세요! ⭐**
 
 [⬆ 맨 위로 가기](#-pokekernel)
 
