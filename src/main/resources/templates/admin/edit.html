@@ -179,6 +179,19 @@
         </div>
 
         <div class="form-group">
+          <label for="collectionStatus">컬렉션 상태 (Collection Status)</label>
+          <select id="collectionStatus" name="collectionStatus">
+            <option value="">선택하세요</option>
+            <option th:each="status : ${collectionStatuses}" 
+                    th:value="${status.name()}" 
+                    th:text="${status.name() + ' - ' + status.description}"
+                    th:selected="${card.collectionStatus == status}">
+            </option>
+          </select>
+          <div class="help-text">OWNED: 보유중, WHISHLIST: 위시리스트(갖고싶음), FOR_TRADE: 교환중, FOR_SALE: 판매중, TRADED: 교환 완료, SOLD: 판매 완료</div>
+        </div>
+
+        <div class="form-group">
           <label for="imageUrl">이미지 URL</label>
           <input type="text" id="imageUrl" name="imageUrl" th:value="${card.imageUrl}" />
           <div class="help-text">외부 이미지 URL을 입력하거나 아래에서 새 이미지를 업로드하세요.</div>
