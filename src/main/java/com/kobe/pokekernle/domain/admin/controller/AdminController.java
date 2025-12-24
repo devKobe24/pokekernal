@@ -212,6 +212,12 @@ public class AdminController {
         model.addAttribute("card", card);
         model.addAttribute("rarities", Rarity.values());
         model.addAttribute("cardConditions", CardCondition.values());
+        
+        // 현재 시세 정보 가져오기
+        marketPriceRepository.findByCard(card).ifPresent(marketPrice -> {
+            model.addAttribute("currentMarketPrice", marketPrice);
+        });
+        
         return "admin/edit"; // templates/admin/edit.html
     }
 
@@ -228,6 +234,7 @@ public class AdminController {
             @RequestParam(required = false) String imageUrl,
             @RequestParam(required = false) MultipartFile imageFile,
             @RequestParam(required = false) String salePrice,
+            @RequestParam(required = false) String currentPriceUsd,
             RedirectAttributes redirectAttributes
     ) {
         Card card = cardRepository.findById(id)
@@ -291,7 +298,50 @@ public class AdminController {
         cardRepository.save(card);
         log.info("[ADMIN] 카드 수정 완료 - Card ID: {}", id);
 
-        redirectAttributes.addFlashAttribute("message", "카드 정보가 수정되었습니다.");
+        // 현재 시세(USD) 처리
+        if (currentPriceUsd != null && !currentPriceUsd.isBlank()) {
+            try {
+                BigDecimal price = new BigDecimal(currentPriceUsd.trim());
+                
+                // MarketPrice 업데이트 또는 생성
+                marketPriceRepository.findByCard(card)
+                        .ifPresentOrElse(
+                                marketPrice -> {
+                                    marketPrice.updatePrice(price);
+                                    marketPriceRepository.save(marketPrice);
+                                    log.info("[ADMIN] MarketPrice 업데이트 완료 - Card ID: {}, Price: ${}", card.getId(), price);
+                                },
+                                () -> {
+                                    MarketPrice marketPrice = MarketPrice.builder()
+                                            .card(card)
+                                            .price(price)
+                                            .currency("USD")
+                                            .source("Manual")
+                                            .build();
+                                    marketPriceRepository.save(marketPrice);
+                                    log.info("[ADMIN] MarketPrice 생성 완료 - Card ID: {}, Price: ${}", card.getId(), price);
+                                }
+                        );
+                
+                // PriceHistory에 기록 추가 (그래프용)
+                PriceHistory priceHistory = PriceHistory.builder()
+                        .card(card)
+                        .price(price)
+                        .recordedAt(java.time.LocalDate.now())
+                        .build();
+                priceHistoryRepository.save(priceHistory);
+                log.info("[ADMIN] PriceHistory 기록 추가 완료 - Card ID: {}, Price: ${}", card.getId(), price);
+            } catch (NumberFormatException e) {
+                log.warn("[ADMIN] 현재 시세(USD) 파싱 실패: {}", currentPriceUsd);
+                redirectAttributes.addFlashAttribute("error", "현재 시세(USD) 형식이 올바르지 않습니다.");
+            }
+        }
+
+        String successMessage = "카드 정보가 수정되었습니다.";
+        if (currentPriceUsd != null && !currentPriceUsd.isBlank()) {
+            successMessage += " 현재 시세(USD): $" + currentPriceUsd + "가 기록되었습니다.";
+        }
+        redirectAttributes.addFlashAttribute("message", successMessage);
         return "redirect:/admin/cards/list";
     }
 
