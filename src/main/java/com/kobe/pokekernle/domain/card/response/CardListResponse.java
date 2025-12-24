@@ -23,6 +23,10 @@ public record CardListResponse(
         String name,
         String setName,
         String rarity,
+        String cardCondition,        // 카드 상태 (enum name)
+        String cardConditionDesc,    // 카드 상태 설명
+        String collectionStatus,     // 컬렉션 상태 (enum name)
+        String collectionStatusDesc, // 컬렉션 상태 설명
         String imageUrl,
         String priceDisplay // 화면에 보여줄 가격 문자열 (예: "$ 12.50")
 ) {
@@ -47,6 +51,10 @@ public record CardListResponse(
                 card.getName() != null ? card.getName() : "Unknown",
                 card.getSetName() != null ? card.getSetName() : "Unknown Set",
                 card.getRarity() != null ? card.getRarity().name() : "UNKNOWN", // Enum -> String, null 처리
+                card.getCardCondition() != null ? card.getCardCondition().name() : null, // 카드 상태
+                card.getCardCondition() != null ? card.getCardCondition().getDescription() : null, // 카드 상태 설명
+                card.getCollectionStatus() != null ? card.getCollectionStatus().name() : null, // 컬렉션 상태
+                card.getCollectionStatus() != null ? card.getCollectionStatus().getDescription() : null, // 컬렉션 상태 설명
                 card.getDisplayImageUrl() != null ? card.getDisplayImageUrl() : "/images/pokemon-card.png", // 업로드된 이미지 우선 사용
                 priceStr
         );

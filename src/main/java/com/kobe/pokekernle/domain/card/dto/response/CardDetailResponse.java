@@ -27,6 +27,10 @@ public record CardDetailResponse(
         String setName,
         String number,
         String rarity,
+        String cardCondition,        // 카드 상태 (enum name)
+        String cardConditionDesc,    // 카드 상태 설명
+        String collectionStatus,     // 컬렉션 상태 (enum name)
+        String collectionStatusDesc, // 컬렉션 상태 설명
         String imageUrl,
         String currentPrice,    // 현재가 (문자열)
         String currency,        // 통화(EUR, USD)
@@ -64,6 +68,10 @@ public record CardDetailResponse(
                 card.getSetName() != null ? card.getSetName() : "Unknown Set",
                 card.getNumber(),
                 card.getRarity() != null ? card.getRarity().name() : "UNKNOWN",
+                card.getCardCondition() != null ? card.getCardCondition().name() : null, // 카드 상태
+                card.getCardCondition() != null ? card.getCardCondition().getDescription() : null, // 카드 상태 설명
+                card.getCollectionStatus() != null ? card.getCollectionStatus().name() : null, // 컬렉션 상태
+                card.getCollectionStatus() != null ? card.getCollectionStatus().getDescription() : null, // 컬렉션 상태 설명
                 card.getDisplayImageUrl() != null ? card.getDisplayImageUrl() : "/images/pokemon-card.png",
                 priceStr,
                 curr,
