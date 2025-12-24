@@ -72,6 +72,26 @@
           Set | Rarity
         </p>
 
+        <div style="margin-top: 15px; padding: 15px; background-color: #f9fafb; border-radius: 8px; border-left: 4px solid #4338ca;">
+          <div th:if="${card.cardCondition != null}" style="margin-bottom: 8px;">
+            <div style="font-weight: bold; color: #4338ca; margin-bottom: 4px;">카드 상태 (Condition):</div>
+            <div style="margin-left: 8px;">
+              <span style="font-weight: 600;" th:text="${card.cardCondition}">MINT</span>
+              <span th:if="${card.cardConditionDesc != null}" style="color: #666; margin-left: 8px;" th:text="'(' + ${card.cardConditionDesc} + ')'">(미개봉/신품)</span>
+            </div>
+          </div>
+          <div th:if="${card.collectionStatus != null}">
+            <div style="font-weight: bold; color: #4338ca; margin-bottom: 4px;">컬렉션 상태 (Collection Status):</div>
+            <div style="margin-left: 8px;">
+              <span style="font-weight: 600;" th:text="${card.collectionStatus}">OWNED</span>
+              <span th:if="${card.collectionStatusDesc != null}" style="color: #666; margin-left: 8px;" th:text="'(' + ${card.collectionStatusDesc} + ')'">(보유중)</span>
+            </div>
+          </div>
+          <div th:if="${card.cardCondition == null and card.collectionStatus == null}" style="color: #999; font-style: italic;">
+            상태 정보가 없습니다.
+          </div>
+        </div>
+
         <h2 style="color: #d97706; margin-top: 20px">
           <span th:text="${card.currency}">$</span>
           <span th:text="${card.currentPrice}">12.50</span>
