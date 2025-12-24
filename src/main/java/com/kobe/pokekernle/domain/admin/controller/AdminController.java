@@ -6,6 +6,7 @@ import com.kobe.pokekernle.domain.card.entity.MarketPrice;
 import com.kobe.pokekernle.domain.card.entity.PriceHistory;
 import com.kobe.pokekernle.domain.card.entity.Rarity;
 import com.kobe.pokekernle.domain.collection.entity.CardCondition;
+import com.kobe.pokekernle.domain.collection.entity.CollectionStatus;
 import com.kobe.pokekernle.domain.card.repository.CardRepository;
 import com.kobe.pokekernle.domain.card.repository.MarketPriceRepository;
 import com.kobe.pokekernle.domain.card.repository.PriceHistoryRepository;
@@ -53,7 +54,8 @@ public class AdminController {
     @GetMapping("/cards/register")
     public String registerPage(Model model) {
         model.addAttribute("rarities", Rarity.values());
-        model.addAttribute("cardConditions", com.kobe.pokekernle.domain.collection.entity.CardCondition.values());
+        model.addAttribute("cardConditions", CardCondition.values());
+        model.addAttribute("collectionStatuses", CollectionStatus.values());
         return "admin/register"; // templates/admin/register.html
     }
 
@@ -81,6 +83,7 @@ public class AdminController {
             @RequestParam(required = false) String number,
             @RequestParam(required = false) String rarity,
             @RequestParam(required = false) String cardCondition,
+            @RequestParam(required = false) String collectionStatus,
             @RequestParam(required = false) MultipartFile imageFile,
             @RequestParam(required = false) String imageUrl,
             @RequestParam(required = false) String salePrice,
@@ -137,6 +140,16 @@ public class AdminController {
                 }
             }
 
+            // CollectionStatus 파싱
+            CollectionStatus collectionStatusEnum = null;
+            if (collectionStatus != null && !collectionStatus.isBlank()) {
+                try {
+                    collectionStatusEnum = CollectionStatus.valueOf(collectionStatus.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    log.warn("[ADMIN] CollectionStatus 파싱 실패: {}", collectionStatus);
+                }
+            }
+
             // 카드 생성
             Card card = Card.builder()
                     .name(name.trim())
@@ -144,6 +157,7 @@ public class AdminController {
                     .number(number != null && !number.isBlank() ? number.trim() : null)
                     .rarity(rarityEnum)
                     .cardCondition(cardConditionEnum)
+                    .collectionStatus(collectionStatusEnum)
                     .imageUrl(imageUrl != null && !imageUrl.isBlank() ? imageUrl.trim() : null)
                     .uploadedImageUrl(uploadedImageUrl)
                     .salePrice(salePriceLong)
@@ -212,6 +226,7 @@ public class AdminController {
         model.addAttribute("card", card);
         model.addAttribute("rarities", Rarity.values());
         model.addAttribute("cardConditions", CardCondition.values());
+        model.addAttribute("collectionStatuses", CollectionStatus.values());
         
         // 현재 시세 정보 가져오기
         marketPriceRepository.findByCard(card).ifPresent(marketPrice -> {
@@ -231,6 +246,7 @@ public class AdminController {
             @RequestParam(required = false) String number,
             @RequestParam(required = false) String rarity,
             @RequestParam(required = false) String cardCondition,
+            @RequestParam(required = false) String collectionStatus,
             @RequestParam(required = false) String imageUrl,
             @RequestParam(required = false) MultipartFile imageFile,
             @RequestParam(required = false) String salePrice,
@@ -283,6 +299,16 @@ public class AdminController {
             }
         }
 
+        // CollectionStatus 파싱
+        CollectionStatus collectionStatusEnum = null;
+        if (collectionStatus != null && !collectionStatus.isBlank()) {
+            try {
+                collectionStatusEnum = CollectionStatus.valueOf(collectionStatus.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("[ADMIN] CollectionStatus 파싱 실패: {}", collectionStatus);
+            }
+        }
+
         // 카드 정보 업데이트
         card.updateCard(
                 name,
@@ -290,6 +316,7 @@ public class AdminController {
                 number,
                 rarityEnum,
                 cardConditionEnum,
+                collectionStatusEnum,
                 imageUrl,
                 uploadedImageUrl != null ? uploadedImageUrl : card.getUploadedImageUrl(),
                 salePriceLong
