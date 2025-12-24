@@ -280,15 +280,53 @@
           </div>
 
           <div class="form-group">
-            <label for="setId">세트 ID (Set ID) - 선택사항</label>
+            <label for="setName">세트 이름 (Set Name) - 선택사항</label>
             <input
               type="text"
-              id="setId"
-              name="setId"
-              placeholder="예: sv3pt5 (151세트)"
+              id="setName"
+              name="setName"
+              placeholder="예: 151, 초전 브레이"
             />
             <div class="help-text">
-              * 정확도를 위해 세트 ID를 알면 입력하세요.
+              * 카드가 속한 세트 이름을 입력하세요.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="rarity">희귀도 (Rarity) - 선택사항</label>
+            <select
+              id="rarity"
+              name="rarity"
+              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;"
+            >
+              <option value="">선택 안 함</option>
+              <option th:each="rarity : ${rarities}" 
+                      th:value="${rarity.name()}" 
+                      th:text="${rarity.name()}">
+                COMMON
+              </option>
+            </select>
+            <div class="help-text">
+              * 카드의 희귀도를 선택하세요. (COMMON, UNCOMMON, RARE, HOLO_RARE, DOUBLE_RARE, ULTRA_RARE, ILLUSTRATION_RARE, SECRET_RARE, PROMO, UNKNOWN)
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cardCondition">카드 상태 (Condition) - 선택사항</label>
+            <select
+              id="cardCondition"
+              name="cardCondition"
+              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;"
+            >
+              <option value="">선택 안 함</option>
+              <option th:each="condition : ${cardConditions}" 
+                      th:value="${condition.name()}" 
+                      th:text="${condition.name() + ' - ' + condition.description}">
+                MINT - 미개봄/신품
+              </option>
+            </select>
+            <div class="help-text">
+              * 카드의 상태를 선택하세요. (MINT: 미개봄/신품, NEAR_MINT: S급, EXCELLENT: A급, LIGHTLY_PLAYED: B급, PLAYED: C급, HEAVILY_PLAYED: D급, DAMAGED: 파손됨)
             </div>
           </div>
 
