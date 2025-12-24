@@ -37,14 +37,20 @@ public record CardDetailResponse(
         String priceStr = "-";
         String curr = "USD"; // 기본값 USD
 
-        if (marketPrice != null && marketPrice.getCard() != null) {
-            // EUR를 USD로 변환
-            BigDecimal usdPrice = currencyConverter.convertToUsd(
-                    marketPrice.getPrice(), 
-                    marketPrice.getCurrency()
-            );
-            priceStr = usdPrice != null ? usdPrice.toString() : "-";
-            curr = "USD";
+        if (marketPrice != null && marketPrice.getPrice() != null) {
+            try {
+                // EUR를 USD로 변환
+                BigDecimal usdPrice = currencyConverter.convertToUsd(
+                        marketPrice.getPrice(), 
+                        marketPrice.getCurrency() != null ? marketPrice.getCurrency() : "USD"
+                );
+                priceStr = usdPrice != null ? usdPrice.toString() : "-";
+                curr = "USD";
+            } catch (Exception e) {
+                // 변환 실패 시 기본값 사용
+                priceStr = "-";
+                curr = "USD";
+            }
         }
 
         List<PriceHistoryDto> historyDtos = (histories == null) ? Collections.emptyList()
@@ -54,11 +60,11 @@ public record CardDetailResponse(
 
         return new CardDetailResponse(
                 card.getId(),
-                card.getName(),
-                card.getSetName(),
+                card.getName() != null ? card.getName() : "Unknown",
+                card.getSetName() != null ? card.getSetName() : "Unknown Set",
                 card.getNumber(),
-                card.getRarity().name(),
-                card.getDisplayImageUrl(), // 업로드된 이미지 우선 사용
+                card.getRarity() != null ? card.getRarity().name() : "UNKNOWN",
+                card.getDisplayImageUrl() != null ? card.getDisplayImageUrl() : "/images/pokemon-card.png",
                 priceStr,
                 curr,
                 card.getSalePrice(), // 희망 판매 가격 (원화)
