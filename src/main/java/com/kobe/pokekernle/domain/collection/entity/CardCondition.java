@@ -25,4 +25,8 @@ public enum CardCondition {
     CardCondition(String description) {
         this.description = description;
     }
+
+    public String getDescription() {
+        return description;
+    }
 }
