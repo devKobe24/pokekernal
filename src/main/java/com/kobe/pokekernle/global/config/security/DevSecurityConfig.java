@@ -46,8 +46,6 @@ public class DevSecurityConfig {
                         // 5. 관리자 페이지는 ADMIN 권한 필요
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/cards/**").permitAll() // 카드 목록 페이지 허용
-                        // API 요청 허용 (POST 요청도 포함)
-                        .requestMatchers("/api/**").permitAll()
                         .requestMatchers("/collection/**").permitAll()
                         .requestMatchers("/").permitAll()
                         .anyRequest().authenticated()
@@ -77,7 +75,6 @@ public class DevSecurityConfig {
                         // H2 Console 허용
                         .ignoringRequestMatchers(PathRequest.toH2Console())
                         // API 요청에 대해서는 CSRF 보호 비활성화 (POST 403 에러 해결)
-                        .ignoringRequestMatchers("/api/**")
                         // 개발 환경에서는 /admin/** POST 요청도 CSRF 비활성화 (편의상)
                         .ignoringRequestMatchers("/admin/**")
                 );

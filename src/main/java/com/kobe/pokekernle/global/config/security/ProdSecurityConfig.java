@@ -43,10 +43,7 @@ public class ProdSecurityConfig {
                         // 5. 컬렉션 페이지 허용
                         .requestMatchers("/collection/**").permitAll()
 
-                        // 6. API 요청 허용
-                        .requestMatchers("/api/**").permitAll()
-
-                        // 7. 업로드된 이미지 접근 허용
+                        // 6. 업로드된 이미지 접근 허용
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
 
