@@ -1,6 +1,8 @@
 package com.kobe.pokekernle.domain.card.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -20,7 +22,7 @@ import java.time.LocalDate;
  */
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "price_histories")
 public class PriceHistory {
 
@@ -37,5 +39,10 @@ public class PriceHistory {
 
     private LocalDate recordedAt; // 기록된 날짜
 
-    // 생성자, Builder
+    @Builder
+    public PriceHistory(Card card, BigDecimal price, LocalDate recordedAt) {
+        this.card = card;
+        this.price = price;
+        this.recordedAt = recordedAt != null ? recordedAt : LocalDate.now();
+    }
 }

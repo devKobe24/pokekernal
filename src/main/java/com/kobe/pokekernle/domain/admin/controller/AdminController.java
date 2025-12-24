@@ -2,6 +2,8 @@ package com.kobe.pokekernle.domain.admin.controller;
 
 import com.kobe.pokekernle.domain.admin.service.ImageUploadService;
 import com.kobe.pokekernle.domain.card.entity.Card;
+import com.kobe.pokekernle.domain.card.entity.MarketPrice;
+import com.kobe.pokekernle.domain.card.entity.PriceHistory;
 import com.kobe.pokekernle.domain.card.entity.Rarity;
 import com.kobe.pokekernle.domain.card.repository.CardRepository;
 import com.kobe.pokekernle.domain.card.repository.MarketPriceRepository;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -77,6 +80,7 @@ public class AdminController {
             @RequestParam(required = false) MultipartFile imageFile,
             @RequestParam(required = false) String imageUrl,
             @RequestParam(required = false) String salePrice,
+            @RequestParam(required = false) String currentPriceUsd,
             RedirectAttributes redirectAttributes
     ) {
         // 이미지 업로드 처리
@@ -133,7 +137,49 @@ public class AdminController {
             cardRepository.save(card);
             log.info("[ADMIN] 카드 등록 완료 - Card ID: {}", card.getId());
 
+            // 현재 시세(USD) 처리
+            if (currentPriceUsd != null && !currentPriceUsd.isBlank()) {
+                try {
+                    BigDecimal price = new BigDecimal(currentPriceUsd.trim());
+                    
+                    // MarketPrice 업데이트 또는 생성
+                    marketPriceRepository.findByCard(card)
+                            .ifPresentOrElse(
+                                    marketPrice -> {
+                                        marketPrice.updatePrice(price);
+                                        marketPriceRepository.save(marketPrice);
+                                        log.info("[ADMIN] MarketPrice 업데이트 완료 - Card ID: {}, Price: ${}", card.getId(), price);
+                                    },
+                                    () -> {
+                                        MarketPrice marketPrice = MarketPrice.builder()
+                                                .card(card)
+                                                .price(price)
+                                                .currency("USD")
+                                                .source("Manual")
+                                                .build();
+                                        marketPriceRepository.save(marketPrice);
+                                        log.info("[ADMIN] MarketPrice 생성 완료 - Card ID: {}, Price: ${}", card.getId(), price);
+                                    }
+                            );
+                    
+                    // PriceHistory에 기록 추가 (그래프용)
+                    PriceHistory priceHistory = PriceHistory.builder()
+                            .card(card)
+                            .price(price)
+                            .recordedAt(java.time.LocalDate.now())
+                            .build();
+                    priceHistoryRepository.save(priceHistory);
+                    log.info("[ADMIN] PriceHistory 기록 추가 완료 - Card ID: {}, Price: ${}", card.getId(), price);
+                } catch (NumberFormatException e) {
+                    log.warn("[ADMIN] 현재 시세(USD) 파싱 실패: {}", currentPriceUsd);
+                    redirectAttributes.addFlashAttribute("error", "현재 시세(USD) 형식이 올바르지 않습니다.");
+                }
+            }
+
             String successMessage = "카드가 등록되었습니다!";
+            if (currentPriceUsd != null && !currentPriceUsd.isBlank()) {
+                successMessage += " 현재 시세(USD): $" + currentPriceUsd + "가 기록되었습니다.";
+            }
             redirectAttributes.addFlashAttribute("message", successMessage);
         } catch (Exception e) {
             log.error("[ADMIN] 카드 등록 실패", e);
