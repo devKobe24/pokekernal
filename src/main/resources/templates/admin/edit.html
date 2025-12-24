@@ -150,6 +150,19 @@
         </div>
 
         <div class="form-group">
+          <label for="cardCondition">카드 상태 (Condition)</label>
+          <select id="cardCondition" name="cardCondition">
+            <option value="">선택하세요</option>
+            <option th:each="condition : ${cardConditions}" 
+                    th:value="${condition.name()}" 
+                    th:text="${condition.name() + ' - ' + condition.description}"
+                    th:selected="${card.cardCondition == condition}">
+            </option>
+          </select>
+          <div class="help-text">MINT: 미개봄/신품, NEAR_MINT: S급 (거의 새것), EXCELLENT: A급 (약간의 사용감), LIGHTLY_PLAYED: B급 (눈에 띄는 상처), PLAYED: C급 (플레이용), HEAVILY_PLAYED: D급 (심한 사용 흔적), DAMAGED: 파손됨</div>
+        </div>
+
+        <div class="form-group">
           <label for="imageUrl">이미지 URL</label>
           <input type="text" id="imageUrl" name="imageUrl" th:value="${card.imageUrl}" />
           <div class="help-text">외부 이미지 URL을 입력하거나 아래에서 새 이미지를 업로드하세요.</div>
