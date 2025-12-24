@@ -50,7 +50,10 @@ public class ProdSecurityConfig {
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
 
-                        // 8. 관리자 페이지는 ADMIN 권한만 접근 가능
+                        // 8. SEO 파일 허용
+                        .requestMatchers("/sitemap.xml", "/robots.txt").permitAll()
+
+                        // 9. 관리자 페이지는 ADMIN 권한만 접근 가능
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
                         // 8. 그 외 모든 요청은 인증 필요

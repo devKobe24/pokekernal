@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /cards
+Allow: /collection
+Disallow: /admin
+Disallow: /api
+
+Sitemap: https://pokekernel.com/sitemap.xml
+

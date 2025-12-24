@@ -39,6 +39,8 @@ public class DevSecurityConfig {
                         .requestMatchers("/favicon.ico").permitAll()
                         // 5. 업로드된 이미지 접근 허용
                         .requestMatchers("/uploads/**").permitAll()
+                        // 6. SEO 파일 허용
+                        .requestMatchers("/sitemap.xml", "/robots.txt").permitAll()
                         // 4. 로그인 페이지는 모두 접근 가능
                         .requestMatchers("/admin/login").permitAll()
                         // 5. 관리자 페이지는 ADMIN 권한 필요

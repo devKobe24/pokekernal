@@ -27,9 +27,17 @@ server:
     connection-timeout: 300000 # 5분 (밀리초)
   http2:
     enabled: false
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
 
 # 환율 설정 (EUR to USD)
 currency:
   exchange-rate:
     eur-to-usd: 1.10 # 1 EUR = 1.10 USD (환율이 변경되면 이 값을 수정하세요)
+
+# 사이트 URL 설정 (SEO용 - Sitemap 생성 시 사용)
+app:
+  site:
+    url: ${SITE_URL:http://localhost:8080} # 운영 환경에서는 실제 도메인으로 설정하세요 (예: https://pokekernel.com)
 
