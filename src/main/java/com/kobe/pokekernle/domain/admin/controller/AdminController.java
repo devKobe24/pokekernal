@@ -5,6 +5,7 @@ import com.kobe.pokekernle.domain.card.entity.Card;
 import com.kobe.pokekernle.domain.card.entity.MarketPrice;
 import com.kobe.pokekernle.domain.card.entity.PriceHistory;
 import com.kobe.pokekernle.domain.card.entity.Rarity;
+import com.kobe.pokekernle.domain.collection.entity.CardCondition;
 import com.kobe.pokekernle.domain.card.repository.CardRepository;
 import com.kobe.pokekernle.domain.card.repository.MarketPriceRepository;
 import com.kobe.pokekernle.domain.card.repository.PriceHistoryRepository;
@@ -50,7 +51,9 @@ public class AdminController {
 
     // 1. 카드 등록 페이지 보여주기
     @GetMapping("/cards/register")
-    public String registerPage() {
+    public String registerPage(Model model) {
+        model.addAttribute("rarities", Rarity.values());
+        model.addAttribute("cardConditions", com.kobe.pokekernle.domain.collection.entity.CardCondition.values());
         return "admin/register"; // templates/admin/register.html
     }
 
@@ -77,6 +80,7 @@ public class AdminController {
             @RequestParam(required = false) String setName,
             @RequestParam(required = false) String number,
             @RequestParam(required = false) String rarity,
+            @RequestParam(required = false) String cardCondition,
             @RequestParam(required = false) MultipartFile imageFile,
             @RequestParam(required = false) String imageUrl,
             @RequestParam(required = false) String salePrice,
@@ -123,12 +127,23 @@ public class AdminController {
                 }
             }
 
+            // CardCondition 파싱
+            CardCondition cardConditionEnum = null;
+            if (cardCondition != null && !cardCondition.isBlank()) {
+                try {
+                    cardConditionEnum = CardCondition.valueOf(cardCondition.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    log.warn("[ADMIN] CardCondition 파싱 실패: {}", cardCondition);
+                }
+            }
+
             // 카드 생성
             Card card = Card.builder()
                     .name(name.trim())
                     .setName(setName != null && !setName.isBlank() ? setName.trim() : "Unknown Set")
                     .number(number != null && !number.isBlank() ? number.trim() : null)
                     .rarity(rarityEnum)
+                    .cardCondition(cardConditionEnum)
                     .imageUrl(imageUrl != null && !imageUrl.isBlank() ? imageUrl.trim() : null)
                     .uploadedImageUrl(uploadedImageUrl)
                     .salePrice(salePriceLong)
@@ -196,6 +211,7 @@ public class AdminController {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카드입니다. ID=" + id));
         model.addAttribute("card", card);
         model.addAttribute("rarities", Rarity.values());
+        model.addAttribute("cardConditions", CardCondition.values());
         return "admin/edit"; // templates/admin/edit.html
     }
 
@@ -208,6 +224,7 @@ public class AdminController {
             @RequestParam(required = false) String setName,
             @RequestParam(required = false) String number,
             @RequestParam(required = false) String rarity,
+            @RequestParam(required = false) String cardCondition,
             @RequestParam(required = false) String imageUrl,
             @RequestParam(required = false) MultipartFile imageFile,
             @RequestParam(required = false) String salePrice,
@@ -249,12 +266,23 @@ public class AdminController {
             }
         }
 
+        // CardCondition 파싱
+        CardCondition cardConditionEnum = null;
+        if (cardCondition != null && !cardCondition.isBlank()) {
+            try {
+                cardConditionEnum = CardCondition.valueOf(cardCondition.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("[ADMIN] CardCondition 파싱 실패: {}", cardCondition);
+            }
+        }
+
         // 카드 정보 업데이트
         card.updateCard(
                 name,
                 setName,
                 number,
                 rarityEnum,
+                cardConditionEnum,
                 imageUrl,
                 uploadedImageUrl != null ? uploadedImageUrl : card.getUploadedImageUrl(),
                 salePriceLong
