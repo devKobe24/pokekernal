@@ -1,5 +1,6 @@
 package com.kobe.pokekernle.domain.card.entity;
 
+import com.kobe.pokekernle.domain.collection.entity.CardCondition;
 import com.kobe.pokekernle.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -42,6 +43,9 @@ public class Card extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Rarity rarity; // 희귀도
 
+    @Enumerated(EnumType.STRING)
+    private CardCondition cardCondition; // 카드 상태 (MINT, NEAR_MINT 등)
+
     @Column(length = 1000)
     private String imageUrl; // 카드 이미지 URL (S3 또는 외부 링크)
 
@@ -56,11 +60,12 @@ public class Card extends BaseTimeEntity {
     private String externalId;
 
     @Builder
-    public Card(String name, String setName, String number, Rarity rarity, String imageUrl, String uploadedImageUrl, Long salePrice, String externalId) {
+    public Card(String name, String setName, String number, Rarity rarity, CardCondition cardCondition, String imageUrl, String uploadedImageUrl, Long salePrice, String externalId) {
         this.name = name;
         this.setName = setName;
         this.number = number;
         this.rarity = rarity;
+        this.cardCondition = cardCondition;
         this.imageUrl = imageUrl;
         this.uploadedImageUrl = uploadedImageUrl;
         this.salePrice = salePrice;
@@ -99,7 +104,7 @@ public class Card extends BaseTimeEntity {
     /**
      * 카드 정보 수정
      */
-    public void updateCard(String name, String setName, String number, Rarity rarity, 
+    public void updateCard(String name, String setName, String number, Rarity rarity, CardCondition cardCondition,
                           String imageUrl, String uploadedImageUrl, Long salePrice) {
         if (name != null && !name.isBlank()) {
             this.name = name;
@@ -112,6 +117,9 @@ public class Card extends BaseTimeEntity {
         }
         if (rarity != null) {
             this.rarity = rarity;
+        }
+        if (cardCondition != null) {
+            this.cardCondition = cardCondition;
         }
         if (imageUrl != null) {
             this.imageUrl = imageUrl;
