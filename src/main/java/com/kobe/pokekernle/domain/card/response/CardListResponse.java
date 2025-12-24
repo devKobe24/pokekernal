@@ -29,20 +29,25 @@ public record CardListResponse(
     public static CardListResponse from(Card card, MarketPrice marketPrice, CurrencyConverterService currencyConverter) {
         String priceStr = "가격 정보 없음";
         if (marketPrice != null && marketPrice.getPrice() != null) {
-            // EUR를 USD로 변환하여 표시
-            BigDecimal usdPrice = currencyConverter.convertToUsd(
-                    marketPrice.getPrice(), 
-                    marketPrice.getCurrency()
-            );
-            priceStr = "$ " + usdPrice;
+            try {
+                // EUR를 USD로 변환하여 표시
+                BigDecimal usdPrice = currencyConverter.convertToUsd(
+                        marketPrice.getPrice(), 
+                        marketPrice.getCurrency() != null ? marketPrice.getCurrency() : "USD"
+                );
+                priceStr = "$ " + usdPrice;
+            } catch (Exception e) {
+                // 변환 실패 시 기본값 사용
+                priceStr = "가격 정보 없음";
+            }
         }
 
         return new CardListResponse(
                 card.getId(),
-                card.getName(),
-                card.getSetName(),
-                card.getRarity().name(), // Enum -> String
-                card.getDisplayImageUrl(), // 업로드된 이미지 우선 사용
+                card.getName() != null ? card.getName() : "Unknown",
+                card.getSetName() != null ? card.getSetName() : "Unknown Set",
+                card.getRarity() != null ? card.getRarity().name() : "UNKNOWN", // Enum -> String, null 처리
+                card.getDisplayImageUrl() != null ? card.getDisplayImageUrl() : "/images/pokemon-card.png", // 업로드된 이미지 우선 사용
                 priceStr
         );
     }
