@@ -46,6 +46,22 @@
       .price-input-wrapper input {
         padding-left: 30px;
       }
+      .usd-input-wrapper {
+        position: relative;
+      }
+      .usd-input-wrapper::before {
+        content: "$";
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+        font-weight: bold;
+        z-index: 1;
+      }
+      .usd-input-wrapper input {
+        padding-left: 30px;
+      }
       .help-text {
         font-size: 0.85em;
         color: #888;
@@ -209,6 +225,26 @@
           <div class="help-text">판매하고자 하는 가격을 원화(₩)로 입력하세요.</div>
         </div>
 
+        <div class="form-group">
+          <label for="currentPriceUsd">현재 시세 (USD) - 선택사항</label>
+          <div class="usd-input-wrapper">
+            <input
+              type="text"
+              id="currentPriceUsd"
+              name="currentPriceUsd"
+              th:value="${currentMarketPrice != null && currentMarketPrice.price != null ? currentMarketPrice.price : ''}"
+              placeholder="25.99"
+              inputmode="decimal"
+              pattern="[0-9]+(\.[0-9]+)?"
+            />
+          </div>
+          <div class="help-text">
+            * 카드의 현재 시세를 USD로 입력하세요. 소수점 포함 가능합니다. (예: 25.99)
+            <br>* 입력된 시세는 그래프 데이터로 축적되어 가격 추이를 확인할 수 있습니다.
+            <br>* 기존 시세를 변경하면 새로운 시세로 업데이트되고, PriceHistory에 기록이 추가됩니다.
+          </div>
+        </div>
+
         <button type="submit" class="btn-submit">수정 완료</button>
         <a href="/admin/cards/list" class="btn-cancel">취소</a>
       </form>
@@ -237,6 +273,51 @@
       document.getElementById('salePrice').addEventListener('input', function(e) {
         this.value = this.value.replace(/[^0-9]/g, '');
       });
+
+      // 현재 시세(USD) 입력란: 숫자와 소수점만 입력 가능하도록 제한
+      const currentPriceUsdInput = document.getElementById('currentPriceUsd');
+      if (currentPriceUsdInput) {
+        currentPriceUsdInput.addEventListener('input', function(e) {
+          // 숫자와 소수점만 허용 (소수점은 하나만)
+          let value = this.value;
+          // 숫자, 소수점, 백스페이스, 삭제 외의 문자 제거
+          value = value.replace(/[^0-9.]/g, '');
+          // 소수점이 여러 개인 경우 첫 번째만 유지
+          const parts = value.split('.');
+          if (parts.length > 2) {
+            value = parts[0] + '.' + parts.slice(1).join('');
+          }
+          // 소수점 두 자리까지만 허용
+          if (parts.length === 2 && parts[1].length > 2) {
+            value = parts[0] + '.' + parts[1].substring(0, 2);
+          }
+          this.value = value;
+        });
+
+        // 현재 시세(USD) 입력란: 키보드 입력 제한
+        currentPriceUsdInput.addEventListener('keydown', function(e) {
+          // 숫자 키 (0-9), 소수점(.), 백스페이스, 삭제, 탭, 화살표 키만 허용
+          if (
+            !(
+              (e.key >= '0' && e.key <= '9') ||
+              e.key === '.' ||
+              e.key === 'Backspace' ||
+              e.key === 'Delete' ||
+              e.key === 'Tab' ||
+              e.key === 'ArrowLeft' ||
+              e.key === 'ArrowRight' ||
+              e.key === 'ArrowUp' ||
+              e.key === 'ArrowDown'
+            )
+          ) {
+            e.preventDefault();
+          }
+          // 소수점이 이미 있으면 또 입력하지 못하게
+          if (e.key === '.' && this.value.includes('.')) {
+            e.preventDefault();
+          }
+        });
+      }
     </script>
   </body>
 </html>
