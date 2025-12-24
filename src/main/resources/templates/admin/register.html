@@ -45,6 +45,22 @@
       .price-input-wrapper input {
         padding-left: 30px;
       }
+      .usd-input-wrapper {
+        position: relative;
+      }
+      .usd-input-wrapper::before {
+        content: "$";
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+        font-weight: bold;
+        z-index: 1;
+      }
+      .usd-input-wrapper input {
+        padding-left: 30px;
+      }
       .help-text {
         font-size: 0.85em;
         color: #888;
@@ -324,14 +340,12 @@
 
           <div class="form-group">
             <label for="currentPriceUsd">현재 시세 (USD) - 선택사항</label>
-            <div style="position: relative;">
-              <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #666; font-weight: bold; z-index: 1;">$</span>
+            <div class="usd-input-wrapper">
               <input
                 type="text"
                 id="currentPriceUsd"
                 name="currentPriceUsd"
-                placeholder="예: 25.99"
-                style="padding-left: 30px; width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;"
+                placeholder="25.99"
                 inputmode="decimal"
                 pattern="[0-9]+(\.[0-9]+)?"
               />
