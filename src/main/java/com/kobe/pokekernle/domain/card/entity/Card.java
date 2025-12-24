@@ -42,12 +42,15 @@ public class Card extends BaseTimeEntity {
     private String number; // 카드 번호 (예: 7/109)
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "rarity", length = 50)
     private Rarity rarity; // 희귀도
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "card_condition", length = 50)
     private CardCondition cardCondition; // 카드 상태 (MINT, NEAR_MINT 등)
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "collection_status", length = 50)
     private CollectionStatus collectionStatus; // 컬렉션 상태 (OWNED, FOR_SALE 등)
 
     @Column(length = 1000)
