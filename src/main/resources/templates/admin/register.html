@@ -322,11 +322,11 @@
               <option th:each="condition : ${cardConditions}" 
                       th:value="${condition.name()}" 
                       th:text="${condition.name() + ' - ' + condition.description}">
-                MINT - 미개봄/신품
+                MINT - 미개봉/신품
               </option>
             </select>
             <div class="help-text">
-              * 카드의 상태를 선택하세요. (MINT: 미개봄/신품, NEAR_MINT: S급, EXCELLENT: A급, LIGHTLY_PLAYED: B급, PLAYED: C급, HEAVILY_PLAYED: D급, DAMAGED: 파손됨)
+              * 카드의 상태를 선택하세요. (MINT: 미개봉/신품, NEAR_MINT: S급, EXCELLENT: A급, LIGHTLY_PLAYED: B급, PLAYED: C급, HEAVILY_PLAYED: D급, DAMAGED: 파손됨)
             </div>
           </div>
 
