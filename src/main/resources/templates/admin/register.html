@@ -331,6 +331,25 @@
           </div>
 
           <div class="form-group">
+            <label for="collectionStatus">컬렉션 상태 (Collection Status) - 선택사항</label>
+            <select
+              id="collectionStatus"
+              name="collectionStatus"
+              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;"
+            >
+              <option value="">선택 안 함</option>
+              <option th:each="status : ${collectionStatuses}" 
+                      th:value="${status.name()}" 
+                      th:text="${status.name() + ' - ' + status.description}">
+                OWNED - 보유중
+              </option>
+            </select>
+            <div class="help-text">
+              * 카드의 컬렉션 상태를 선택하세요. (OWNED: 보유중, WHISHLIST: 위시리스트, FOR_TRADE: 교환중, FOR_SALE: 판매중, TRADED: 교환 완료, SOLD: 판매 완료)
+            </div>
+          </div>
+
+          <div class="form-group">
             <label for="imageFile">카드 이미지 업로드 - 선택사항</label>
             <input
               type="file"
