@@ -12,7 +12,7 @@ package com.kobe.pokekernle.domain.collection.entity;
  * 2025. 12. 20.        kobe       최초 생성
  */
 public enum CardCondition {
-    MINT("미개봄/신품"),
+    MINT("미개봉/신품"),
     NEAR_MINT("S급 (거의 새것)"),
     EXCELLENT("A급 (약간의 사용감)"),
     LIGHTLY_PLAYED("B급 (눈에 띄는 상처)"),
