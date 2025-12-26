@@ -6,6 +6,16 @@
     <link rel="stylesheet" href="/css/card-list.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+      :root {
+        --card-width: 400px;
+        --card-height: 560px;
+        --card-radius: 16px;
+      }
+
+      body {
+        perspective: 1000px; /* 3D 공간감 필수 설정 */
+      }
+
       .detail-container {
         display: flex;
         gap: 40px;
@@ -16,10 +26,87 @@
         border-radius: 15px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       }
-      .detail-image img {
-        max-width: 400px;
-        border-radius: 10px;
+
+      /* 카드 컨테이너 */
+      .card-container {
+        width: var(--card-width);
+        height: var(--card-height);
+        position: relative;
+        z-index: 10;
       }
+
+      .card {
+        width: 100%;
+        height: 100%;
+        border-radius: var(--card-radius);
+        position: relative;
+        transition: transform 0.1s ease-out; /* 부드러운 움직임 */
+        transform-style: preserve-3d;
+        will-change: transform;
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+      }
+
+      /* 1. 기본 이미지 레이어 */
+      .card-face {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0; left: 0;
+        border-radius: var(--card-radius);
+        overflow: hidden;
+        background-color: #1a1a1a;
+        background-size: cover;
+        background-position: center;
+      }
+
+      /* 2. 홀로그램(Shine) 레이어 - 무지개/황금빛 반사 */
+      .card-shine {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: var(--card-radius);
+        mix-blend-mode: color-dodge; /* 색상 닷지: 빛나는 효과의 핵심 */
+        pointer-events: none;
+        
+        /* 홀로그램 그라데이션 텍스처 */
+        background-image: linear-gradient(
+          115deg,
+          transparent 0%,
+          rgba(255, 215, 0, 0.1) 30%, /* 옅은 금색 */
+          rgba(255, 255, 255, 0.6) 45%, /* 강한 하이라이트 */
+          rgba(255, 215, 0, 0.2) 55%,
+          transparent 80%
+        );
+        
+        opacity: 0; /* 평소에는 숨김 */
+        transition: opacity 0.3s;
+        background-size: 300% 300%; /* 배경을 크게 해서 이동시킴 */
+      }
+
+      /* 3. 표면 반사(Glare) 레이어 - 유리 같은 질감 */
+      .card-glare {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: var(--card-radius);
+        mix-blend-mode: overlay; /* 오버레이로 자연스러운 합성 */
+        pointer-events: none;
+        
+        background-image: radial-gradient(
+          farthest-corner circle at var(--mx) var(--my),
+          rgba(255, 255, 255, 0.8) 10%,
+          rgba(255, 255, 255, 0.65) 20%,
+          rgba(0, 0, 0, 0.5) 90%
+        );
+        
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
+      /* 호버 시 효과 활성화 */
+      .card-container:hover .card-shine,
+      .card-container:hover .card-glare {
+        opacity: 1;
+      }
+
       .detail-info {
         flex: 1;
       }
@@ -59,8 +146,12 @@
     </div>
 
     <div class="detail-container">
-      <div class="detail-image">
-        <img th:src="${card.imageUrl != null and !card.imageUrl.isEmpty() ? card.imageUrl : '/images/pokemon-card.png'}" th:alt="${card.name}" onerror="this.src='/images/pokemon-card.png'; this.onerror=null;" />
+      <div class="card-container" id="cardContainer">
+        <div class="card" id="card">
+          <div class="card-face" id="cardFace"></div>
+          <div class="card-shine"></div>
+          <div class="card-glare"></div>
+        </div>
       </div>
 
       <div class="detail-info">
@@ -131,6 +222,75 @@
       /* Thymeleaf 변수를 JS 변수로 주입 */
       const historyData = /*[[${card.priceHistory}]]*/ [];
 
+      // 카드 이미지 URL 설정
+      const cardImageUrl = /*[[${card.imageUrl != null and !card.imageUrl.isEmpty() ? card.imageUrl : '/images/pokemon-card.png'}]]*/ '/images/pokemon-card.png';
+      const cardFace = document.getElementById('cardFace');
+      if (cardFace) {
+        cardFace.style.backgroundImage = `url('${cardImageUrl}')`;
+        // 이미지 로드 실패 시 fallback
+        const img = new Image();
+        img.onerror = function() {
+          cardFace.style.backgroundImage = "url('/images/pokemon-card.png')";
+        };
+        img.src = cardImageUrl;
+      }
+
+      // 홀로그램 효과 JavaScript
+      const container = document.getElementById('cardContainer');
+      const card = document.getElementById('card');
+      const shine = document.querySelector('.card-shine');
+      const glare = document.querySelector('.card-glare');
+
+      // 움직임 강도 설정
+      const ROTATION_RANGE = 18; // 회전 각도 (도)
+
+      if (container && card && shine && glare) {
+        container.addEventListener('mousemove', (e) => {
+          const rect = container.getBoundingClientRect();
+          
+          // 마우스 위치 정규화 (0 ~ 1)
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          
+          // 중심점 기준 좌표 계산 (-1 ~ 1)
+          // X좌표가 변하면 Y축으로 회전, Y좌표가 변하면 X축으로 회전
+          const w = rect.width;
+          const h = rect.height;
+          
+          const px = Math.abs(x / w * 100);
+          const py = Math.abs(y / h * 100);
+          
+          // 회전 각도 계산
+          const rotateY = ((x - w/2) / (w/2)) * ROTATION_RANGE;
+          const rotateX = ((y - h/2) / (h/2)) * -ROTATION_RANGE; // Y축은 반전
+
+          // 1. 카드 3D 회전 적용
+          card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+          // 2. 홀로그램(Shine) 이동
+          // 배경 위치를 이동시켜 빛이 흐르는 느낌 연출
+          shine.style.backgroundPosition = `${50 + (x/w * 50)}% ${50 + (y/h * 50)}%`;
+
+          // 3. 반사광(Glare) 위치 업데이트 (CSS 변수 사용)
+          glare.style.setProperty('--mx', `${px}%`);
+          glare.style.setProperty('--my', `${py}%`);
+        });
+
+        // 마우스가 떠나면 초기화
+        container.addEventListener('mouseleave', () => {
+          card.style.transform = 'rotateX(0) rotateY(0)';
+          shine.style.opacity = '0';
+          glare.style.opacity = '0';
+        });
+
+        // 마우스 진입 시 즉시 반응
+        container.addEventListener('mouseenter', () => {
+          shine.style.opacity = '0.8'; // 홀로그램 강도 조절
+          glare.style.opacity = '1';
+        });
+      }
+
+      // 차트 생성
       if (historyData && historyData.length > 0) {
           const ctx = document.getElementById('priceChart').getContext('2d');
 
