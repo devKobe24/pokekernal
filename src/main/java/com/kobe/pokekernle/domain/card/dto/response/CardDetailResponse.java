@@ -35,6 +35,7 @@ public record CardDetailResponse(
         String currentPrice,    // 현재가 (문자열)
         String currency,        // 통화(EUR, USD)
         Long salePrice,         // 희망 판매 가격 (원화, KRW)
+        Integer quantity,       // 수량
         List<PriceHistoryDto> priceHistory // 그래프용 데이터
 ) {
     public static CardDetailResponse of(Card card, MarketPrice marketPrice, List<PriceHistory> histories, CurrencyConverterService currencyConverter) {
@@ -76,6 +77,7 @@ public record CardDetailResponse(
                 priceStr,
                 curr,
                 card.getSalePrice(), // 희망 판매 가격 (원화)
+                card.getQuantity() != null ? card.getQuantity() : 1, // 수량 (기본값 1)
                 historyDtos
         );
     }
