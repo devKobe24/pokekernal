@@ -35,6 +35,7 @@
         :root {
           --card-width: min(90vw, 350px);
           --card-height: calc(var(--card-width) * 1.4);
+          --rotation-range: 12deg; /* 모바일에서는 작은 각도 */
         }
         
         body {
@@ -63,6 +64,16 @@
         
         .chart-container {
           height: 250px;
+        }
+        
+        /* 모바일 성능 최적화 */
+        .card {
+          will-change: transform;
+          transform: translateZ(0); /* GPU 가속 */
+        }
+        
+        .card-shine {
+          opacity: 0.6 !important; /* 모바일에서는 더 약한 효과 */
         }
       }
 
@@ -280,52 +291,90 @@
       const shine = document.querySelector('.card-shine');
       const glare = document.querySelector('.card-glare');
 
-      // 움직임 강도 설정
-      const ROTATION_RANGE = 18; // 회전 각도 (도)
+      // 움직임 강도 설정 (모바일에서는 작은 각도)
+      const isMobile = window.innerWidth <= 768;
+      const ROTATION_RANGE = isMobile ? 12 : 18; // 모바일에서는 작은 각도
+
+      // 카드 효과 업데이트 함수 (공통)
+      function updateCardEffect(x, y, rect) {
+        const w = rect.width;
+        const h = rect.height;
+        
+        const px = Math.abs(x / w * 100);
+        const py = Math.abs(y / h * 100);
+        
+        // 회전 각도 계산
+        const rotateY = ((x - w/2) / (w/2)) * ROTATION_RANGE;
+        const rotateX = ((y - h/2) / (h/2)) * -ROTATION_RANGE;
+
+        // 1. 카드 3D 회전 적용
+        card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+        // 2. 홀로그램(Shine) 이동
+        shine.style.backgroundPosition = `${50 + (x/w * 50)}% ${50 + (y/h * 50)}%`;
+
+        // 3. 반사광(Glare) 위치 업데이트
+        glare.style.setProperty('--mx', `${px}%`);
+        glare.style.setProperty('--my', `${py}%`);
+      }
+
+      function resetCardEffect() {
+        card.style.transform = 'rotateX(0) rotateY(0)';
+        shine.style.opacity = '0';
+        glare.style.opacity = '0';
+      }
+
+      function activateCardEffect() {
+        shine.style.opacity = isMobile ? '0.6' : '0.8';
+        glare.style.opacity = '1';
+      }
 
       if (container && card && shine && glare) {
+        // 마우스 이벤트 (데스크톱)
         container.addEventListener('mousemove', (e) => {
           const rect = container.getBoundingClientRect();
-          
-          // 마우스 위치 정규화 (0 ~ 1)
           const x = e.clientX - rect.left;
           const y = e.clientY - rect.top;
-          
-          // 중심점 기준 좌표 계산 (-1 ~ 1)
-          // X좌표가 변하면 Y축으로 회전, Y좌표가 변하면 X축으로 회전
-          const w = rect.width;
-          const h = rect.height;
-          
-          const px = Math.abs(x / w * 100);
-          const py = Math.abs(y / h * 100);
-          
-          // 회전 각도 계산
-          const rotateY = ((x - w/2) / (w/2)) * ROTATION_RANGE;
-          const rotateX = ((y - h/2) / (h/2)) * -ROTATION_RANGE; // Y축은 반전
-
-          // 1. 카드 3D 회전 적용
-          card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-
-          // 2. 홀로그램(Shine) 이동
-          // 배경 위치를 이동시켜 빛이 흐르는 느낌 연출
-          shine.style.backgroundPosition = `${50 + (x/w * 50)}% ${50 + (y/h * 50)}%`;
-
-          // 3. 반사광(Glare) 위치 업데이트 (CSS 변수 사용)
-          glare.style.setProperty('--mx', `${px}%`);
-          glare.style.setProperty('--my', `${py}%`);
+          updateCardEffect(x, y, rect);
         });
 
-        // 마우스가 떠나면 초기화
-        container.addEventListener('mouseleave', () => {
-          card.style.transform = 'rotateX(0) rotateY(0)';
-          shine.style.opacity = '0';
-          glare.style.opacity = '0';
+        container.addEventListener('mouseleave', resetCardEffect);
+        container.addEventListener('mouseenter', activateCardEffect);
+
+        // 터치 이벤트 (모바일)
+        let isTouching = false;
+        
+        container.addEventListener('touchstart', (e) => {
+          e.preventDefault(); // 스크롤 방지
+          isTouching = true;
+          activateCardEffect();
+          
+          const rect = container.getBoundingClientRect();
+          const touch = e.touches[0];
+          const x = touch.clientX - rect.left;
+          const y = touch.clientY - rect.top;
+          updateCardEffect(x, y, rect);
+        }, { passive: false });
+
+        container.addEventListener('touchmove', (e) => {
+          if (!isTouching) return;
+          e.preventDefault(); // 스크롤 방지
+          
+          const rect = container.getBoundingClientRect();
+          const touch = e.touches[0];
+          const x = touch.clientX - rect.left;
+          const y = touch.clientY - rect.top;
+          updateCardEffect(x, y, rect);
+        }, { passive: false });
+
+        container.addEventListener('touchend', () => {
+          isTouching = false;
+          resetCardEffect();
         });
 
-        // 마우스 진입 시 즉시 반응
-        container.addEventListener('mouseenter', () => {
-          shine.style.opacity = '0.8'; // 홀로그램 강도 조절
-          glare.style.opacity = '1';
+        container.addEventListener('touchcancel', () => {
+          isTouching = false;
+          resetCardEffect();
         });
       }
 
