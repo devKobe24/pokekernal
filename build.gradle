@@ -63,6 +63,9 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+
+    // 6. Rate Limiting
+    implementation 'com.bucket4j:bucket4j-core:8.7.0'
 }
 
 // --- Frontend 빌드 자동화 설정 ---

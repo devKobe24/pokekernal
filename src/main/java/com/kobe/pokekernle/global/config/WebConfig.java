@@ -1,8 +1,11 @@
 package com.kobe.pokekernle.global.config;
 
+import com.kobe.pokekernle.global.interceptor.RateLimitInterceptor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -17,13 +20,24 @@ import java.util.concurrent.TimeUnit;
  * description    : 웹 설정 (정적 리소스 매핑 및 캐시 설정)
  */
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
+
+    private final RateLimitInterceptor rateLimitInterceptor;
 
     @Value("${app.upload.dir:uploads/images}")
     private String uploadDir;
 
     @Value("${app.upload.url-prefix:/uploads/images}")
     private String urlPrefix;
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(rateLimitInterceptor)
+                .addPathPatterns("/register") // 회원가입 엔드포인트에만 적용
+                .excludePathPatterns("/register", "/register?**") // GET 제외
+                .order(1);
+    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
