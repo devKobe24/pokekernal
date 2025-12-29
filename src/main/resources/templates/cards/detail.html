@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <title th:text="${card.name} + ' - PokeKernel'">Card Detail</title>
     <link rel="stylesheet" href="/css/card-list.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -206,6 +208,90 @@
       .btn-primary:hover {
         background-color: #3730a3;
       }
+
+      /* 장바구니 이동 확인 모달 */
+      #cart-confirm-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+        z-index: 10001;
+      }
+
+      #cart-confirm-modal.show {
+        display: flex;
+      }
+
+      .cart-confirm-content {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        width: 400px;
+        max-width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        position: relative;
+      }
+
+      .cart-confirm-content h3 {
+        margin: 0 0 20px 0;
+        font-size: 1.3em;
+        color: #333;
+      }
+
+      .cart-confirm-content p {
+        margin: 0 0 25px 0;
+        color: #666;
+        font-size: 1em;
+      }
+
+      .cart-confirm-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .cart-confirm-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.95em;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .cart-confirm-btn.yes {
+        background-color: #10b981;
+        color: white;
+      }
+
+      .cart-confirm-btn.yes:hover {
+        background-color: #059669;
+      }
+
+      .cart-confirm-btn.no {
+        background-color: #e5e7eb;
+        color: #374151;
+      }
+
+      .cart-confirm-btn.no:hover {
+        background-color: #d1d5db;
+      }
+
+      /* 모바일 대응 */
+      @media (max-width: 768px) {
+        .cart-confirm-content {
+          padding: 20px;
+        }
+        .cart-confirm-buttons {
+          flex-direction: column;
+        }
+        .cart-confirm-btn {
+          width: 100%;
+        }
+      }
     </style>
   </head>
   <body>
@@ -402,6 +488,18 @@
           style="color: #999; margin-top: 20px; text-align: center"
         >
           <p>⚠️ 시세 히스토리 데이터가 충분하지 않습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 장바구니 이동 확인 모달 -->
+    <div id="cart-confirm-modal">
+      <div class="cart-confirm-content">
+        <h3>장바구니 추가 완료</h3>
+        <p>상품이 장바구니에 추가되었습니다.<br>장바구니로 이동하시겠습니까?</p>
+        <div class="cart-confirm-buttons">
+          <button type="button" class="cart-confirm-btn no" id="cart-confirm-no">닫기</button>
+          <button type="button" class="cart-confirm-btn yes" id="cart-confirm-yes">장바구니 보기</button>
         </div>
       </div>
     </div>
@@ -660,6 +758,9 @@
 
               // 장바구니 카운트 업데이트 (있는 경우)
               updateCartBadge();
+
+              // 장바구니 이동 확인 모달 표시
+              showCartConfirmModal();
             } else {
               // 에러 메시지 표시
               alert(data.message || '장바구니 추가에 실패했습니다.');
@@ -675,7 +776,7 @@
         });
       }
 
-      // 바로 구매 (백엔드 API 호출)
+      // 바로 구매 (장바구니에 추가 후 주문서 페이지로 이동)
       if (buyNowBtn) {
         buyNowBtn.addEventListener('click', async function() {
           const quantity = parseInt(quantityInput.value) || 1;
@@ -685,56 +786,49 @@
             return;
           }
 
-          // 구매 확인
-          const confirmMessage = `선택한 상품을 바로 구매하시겠습니까?\n\n` +
-            `상품: ${cardInfo.name}\n` +
-            `수량: ${quantity}개\n` +
-            `총 가격: ₩${(unitPrice * quantity).toLocaleString('ko-KR')}`;
-
-          if (!confirm(confirmMessage)) {
-            return;
-          }
-
           // 로딩 상태
           const originalText = buyNowBtn.textContent;
           buyNowBtn.disabled = true;
-          buyNowBtn.textContent = '구매 중...';
+          buyNowBtn.textContent = '처리 중...';
 
           try {
-            const response = await fetch('/api/orders', {
+            // CSRF 토큰 가져오기
+            const csrfTokenElement = document.querySelector('meta[name="_csrf"]');
+            const csrfToken = csrfTokenElement ? csrfTokenElement.content : '';
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
+            // 장바구니에 추가
+            const headers = {
+              'Content-Type': 'application/json'
+            };
+            
+            if (csrfToken) {
+              headers[csrfHeader] = csrfToken;
+            }
+
+            const response = await fetch('/api/cart/items', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
+              headers: headers,
               body: JSON.stringify({
-                items: [{
-                  cardId: cardInfo.id,
-                  quantity: quantity
-                }]
+                cardId: cardInfo.id,
+                quantity: quantity
               })
             });
 
             const data = await response.json();
 
             if (response.ok) {
-              // 구매 완료 알림
-              alert(`구매가 완료되었습니다!\n\n` +
-                `주문 번호: ${data.id}\n` +
-                `상품: ${cardInfo.name}\n` +
-                `수량: ${quantity}개\n` +
-                `총 가격: ₩${data.totalPrice.toLocaleString('ko-KR')}`);
-              
-              // 주문 페이지로 이동하거나 페이지 새로고침
-              // window.location.href = '/orders/' + data.id;
+              // 주문서 페이지로 이동
+              window.location.href = '/checkout';
             } else {
               // 에러 메시지 표시
-              alert(data.message || '구매 처리에 실패했습니다.');
+              alert(data.message || '장바구니 추가에 실패했습니다.');
               buyNowBtn.textContent = originalText;
               buyNowBtn.disabled = false;
             }
           } catch (error) {
-            console.error('구매 오류:', error);
-            alert('구매 처리 중 오류가 발생했습니다. 로그인 상태를 확인해주세요.');
+            console.error('바로 구매 오류:', error);
+            alert('처리 중 오류가 발생했습니다. 로그인 상태를 확인해주세요.');
             buyNowBtn.textContent = originalText;
             buyNowBtn.disabled = false;
           }
@@ -801,6 +895,55 @@
               }
           });
       }
+
+      // 장바구니 이동 확인 모달 제어
+      const cartConfirmModal = document.getElementById('cart-confirm-modal');
+      const cartConfirmYes = document.getElementById('cart-confirm-yes');
+      const cartConfirmNo = document.getElementById('cart-confirm-no');
+
+      function showCartConfirmModal() {
+        if (cartConfirmModal) {
+          cartConfirmModal.classList.add('show');
+        }
+      }
+
+      function hideCartConfirmModal() {
+        if (cartConfirmModal) {
+          cartConfirmModal.classList.remove('show');
+        }
+      }
+
+      // 예, 이동하기 버튼
+      if (cartConfirmYes) {
+        cartConfirmYes.addEventListener('click', function() {
+          hideCartConfirmModal();
+          // 장바구니 페이지로 이동 (페이지가 없으면 일단 /cart로 설정)
+          window.location.href = '/cart';
+        });
+      }
+
+      // 아니오 버튼
+      if (cartConfirmNo) {
+        cartConfirmNo.addEventListener('click', function() {
+          hideCartConfirmModal();
+        });
+      }
+
+      // 모달 배경 클릭 시 닫기
+      if (cartConfirmModal) {
+        cartConfirmModal.addEventListener('click', function(e) {
+          if (e.target === cartConfirmModal) {
+            hideCartConfirmModal();
+          }
+        });
+      }
+
+      // ESC 키로 모달 닫기
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && cartConfirmModal && cartConfirmModal.classList.contains('show')) {
+          hideCartConfirmModal();
+        }
+      });
 
     </script>
   </body>

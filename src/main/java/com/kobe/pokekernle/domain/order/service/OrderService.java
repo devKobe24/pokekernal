@@ -44,6 +44,11 @@ public class OrderService {
                 .user(user)
                 .status(OrderStatus.PENDING)
                 .totalPrice(0L) // 나중에 업데이트
+                .recipientName(request.getRecipientName())
+                .recipientPhone(request.getRecipientPhone())
+                .deliveryAddress(request.getDeliveryAddress())
+                .deliveryMemo(request.getDeliveryMemo())
+                .paymentMethod(request.getPaymentMethod())
                 .build();
 
         // 각 주문 아이템 처리
@@ -70,6 +75,11 @@ public class OrderService {
                     .totalPrice(itemTotalPrice)
                     .build();
             order.addItem(orderItem);
+
+            // 주문 생성 후 재고 차감
+            card.decreaseQuantity(itemRequest.getQuantity());
+            log.info("[ORDER] 재고 차감 - Card ID: {}, Card Name: {}, 차감 수량: {}, 남은 재고: {}", 
+                card.getId(), card.getName(), itemRequest.getQuantity(), card.getQuantity());
         }
 
         // 총 가격 설정
@@ -85,22 +95,31 @@ public class OrderService {
      * 장바구니에서 주문 생성
      */
     @Transactional
-    public OrderResponse createOrderFromCart(Long userId) {
+    public OrderResponse createOrderFromCart(Long userId, CreateOrderRequest request) {
         var cart = cartService.getCart(userId);
         
         if (cart.getItems().isEmpty()) {
             throw new IllegalArgumentException("장바구니가 비어있습니다.");
         }
 
-        CreateOrderRequest request = new CreateOrderRequest();
-        request.setItems(cart.getItems().stream()
-                .map(item -> {
-                    CreateOrderRequest.OrderItemRequest orderItem = new CreateOrderRequest.OrderItemRequest();
-                    orderItem.setCardId(item.getCardId());
-                    orderItem.setQuantity(item.getQuantity());
-                    return orderItem;
-                })
-                .collect(Collectors.toList()));
+        // 요청에 아이템이 없으면 장바구니의 아이템으로 설정
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            CreateOrderRequest newRequest = new CreateOrderRequest();
+            newRequest.setItems(cart.getItems().stream()
+                    .map(item -> {
+                        CreateOrderRequest.OrderItemRequest orderItem = new CreateOrderRequest.OrderItemRequest();
+                        orderItem.setCardId(item.getCardId());
+                        orderItem.setQuantity(item.getQuantity());
+                        return orderItem;
+                    })
+                    .collect(Collectors.toList()));
+            newRequest.setRecipientName(request.getRecipientName());
+            newRequest.setRecipientPhone(request.getRecipientPhone());
+            newRequest.setDeliveryAddress(request.getDeliveryAddress());
+            newRequest.setDeliveryMemo(request.getDeliveryMemo());
+            newRequest.setPaymentMethod(request.getPaymentMethod());
+            request = newRequest;
+        }
 
         OrderResponse orderResponse = createOrder(userId, request);
         

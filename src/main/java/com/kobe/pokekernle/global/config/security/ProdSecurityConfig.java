@@ -6,7 +6,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * packageName    : com.kobe.pokekernle.global.config
@@ -25,7 +29,12 @@ import org.springframework.security.web.SecurityFilterChain;
 public class ProdSecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
                         // 1. 정적 리소스는 운영에서도 열어줘야 화면이 깨지지 않음
@@ -55,6 +64,9 @@ public class ProdSecurityConfig {
                         // API 경로는 인증된 사용자만 접근 가능
                         .requestMatchers("/api/cart/**").authenticated()
                         .requestMatchers("/api/orders/**").authenticated()
+                        // 장바구니 및 주문서 페이지는 인증된 사용자만 접근 가능
+                        .requestMatchers("/cart").authenticated()
+                        .requestMatchers("/checkout").authenticated()
                         // 9. 관리자 페이지는 ADMIN 권한만 접근 가능
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
@@ -72,9 +84,27 @@ public class ProdSecurityConfig {
                         .permitAll()
                 )
                         .logout(logout -> logout
-                        .logoutRequestMatcher(new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/admin/logout"))
+                        .logoutRequestMatcher(new AntPathRequestMatcher("/admin/logout"))
                         .logoutSuccessUrl("/cards")
+                        .invalidateHttpSession(true) // 세션 무효화
+                        .deleteCookies("JSESSIONID") // 세션 쿠키 삭제
                         .permitAll()
+                )
+                // 세션 관리 설정
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // 필요시 세션 생성
+                        .maximumSessions(1) // 동시 세션 1개만 허용
+                        .maxSessionsPreventsLogin(false) // 새 로그인 시 기존 세션 만료
+                        .expiredUrl("/admin/login?expired=true") // 세션 만료 시 리다이렉트
+                        .sessionRegistry(sessionRegistry) // 세션 레지스트리 등록
+                )
+                // 쿠키 보안 설정
+                .headers(headers -> headers
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .maxAgeInSeconds(31536000) // 1년 (HTTPS 환경)
+                        )
+                        .contentTypeOptions(contentType -> {}) // MIME 타입 스니핑 방지
+                        .xssProtection(xss -> {}) // XSS 보호 활성화
                 )
                 // API 요청에 대해서는 CSRF 보호 비활성화
                 .csrf(csrf -> csrf

@@ -149,4 +149,30 @@ public class Card extends BaseTimeEntity {
             this.quantity = quantity;
         }
     }
+
+    /**
+     * 재고 차감 (주문 시 사용)
+     * @param amount 차감할 수량
+     * @throws IllegalArgumentException 재고가 부족한 경우
+     */
+    public void decreaseQuantity(int amount) {
+        if (this.quantity == null || this.quantity < amount) {
+            throw new IllegalArgumentException(
+                String.format("재고가 부족합니다. (요청: %d개, 재고: %d개)", 
+                    amount, this.quantity != null ? this.quantity : 0)
+            );
+        }
+        this.quantity -= amount;
+    }
+
+    /**
+     * 재고 증가 (주문 취소 시 사용)
+     * @param amount 증가할 수량
+     */
+    public void increaseQuantity(int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("증가할 수량은 0보다 커야 합니다.");
+        }
+        this.quantity = (this.quantity == null ? 0 : this.quantity) + amount;
+    }
 }

@@ -62,10 +62,10 @@ public class OrderController {
      * 장바구니에서 주문 생성
      */
     @PostMapping("/from-cart")
-    public ResponseEntity<?> createOrderFromCart(Principal principal) {
+    public ResponseEntity<?> createOrderFromCart(@Valid @RequestBody CreateOrderRequest request, Principal principal) {
         try {
             User user = getCurrentUser(principal);
-            OrderResponse order = orderService.createOrderFromCart(user.getId());
+            OrderResponse order = orderService.createOrderFromCart(user.getId(), request);
             return ResponseEntity.status(HttpStatus.CREATED).body(order);
         } catch (IllegalArgumentException e) {
             Map<String, String> response = new HashMap<>();

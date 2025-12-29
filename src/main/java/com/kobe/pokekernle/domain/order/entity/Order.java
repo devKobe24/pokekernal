@@ -38,11 +38,34 @@ public class Order extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private OrderStatus status; // 주문 상태
 
+    // 배송지 정보
+    @Column(length = 100)
+    private String recipientName; // 받는 분 이름
+
+    @Column(length = 50)
+    private String recipientPhone; // 받는 분 연락처
+
+    @Column(length = 500)
+    private String deliveryAddress; // 배송 주소
+
+    @Column(length = 200)
+    private String deliveryMemo; // 배송 메모
+
+    // 결제 정보
+    @Column(length = 50)
+    private String paymentMethod; // 결제 방법 (CREDIT_CARD, NAVER_PAY, KAKAO_PAY, BANK_TRANSFER 등)
+
     @Builder
-    public Order(User user, Long totalPrice, OrderStatus status) {
+    public Order(User user, Long totalPrice, OrderStatus status, String recipientName, String recipientPhone, 
+                 String deliveryAddress, String deliveryMemo, String paymentMethod) {
         this.user = user;
         this.totalPrice = totalPrice;
         this.status = status != null ? status : OrderStatus.PENDING;
+        this.recipientName = recipientName;
+        this.recipientPhone = recipientPhone;
+        this.deliveryAddress = deliveryAddress;
+        this.deliveryMemo = deliveryMemo;
+        this.paymentMethod = paymentMethod;
     }
 
     /**

@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -26,7 +29,12 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class DevSecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
                         // 1. H2 Console 자동 허용 (Spring Boot 도구 활용)
@@ -48,6 +56,9 @@ public class DevSecurityConfig {
                         // API 경로는 인증된 사용자만 접근 가능
                         .requestMatchers("/api/cart/**").authenticated()
                         .requestMatchers("/api/orders/**").authenticated()
+                        // 장바구니 및 주문서 페이지는 인증된 사용자만 접근 가능
+                        .requestMatchers("/cart").authenticated()
+                        .requestMatchers("/checkout").authenticated()
                         // 5. 관리자 페이지는 ADMIN 권한 필요
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/cards/**").permitAll() // 카드 목록 페이지 허용
@@ -69,11 +80,24 @@ public class DevSecurityConfig {
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/admin/logout"))
                         .logoutSuccessUrl("/cards")
+                        .invalidateHttpSession(true) // 세션 무효화
+                        .deleteCookies("JSESSIONID") // 세션 쿠키 삭제
                         .permitAll()
                 )
-                // H2 Console은 iframe을 사용하므로 X-Frame-Options 설정 필요
+                // 세션 관리 설정
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // 필요시 세션 생성
+                        .maximumSessions(1) // 동시 세션 1개만 허용
+                        .maxSessionsPreventsLogin(false) // 새 로그인 시 기존 세션 만료
+                        .expiredUrl("/admin/login?expired=true") // 세션 만료 시 리다이렉트
+                        .sessionRegistry(sessionRegistry) // 세션 레지스트리 등록
+                )
+                // 쿠키 보안 설정
                 .headers(headers -> headers
-                        .frameOptions(frame -> frame.sameOrigin())
+                        .frameOptions(frame -> frame.sameOrigin()) // H2 Console은 iframe을 사용하므로 X-Frame-Options 설정 필요
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .maxAgeInSeconds(0) // 개발 환경에서는 비활성화
+                        )
                 )
                 // H2 Console 사용 시 CSRF 보호를 꺼야 함
                 .csrf(csrf -> csrf

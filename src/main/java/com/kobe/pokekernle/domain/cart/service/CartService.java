@@ -93,11 +93,12 @@ public class CartService {
     /**
      * 장바구니 조회
      */
+    @Transactional
     public CartResponse getCart(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        Cart cart = cartRepository.findByUserWithItems(user)
+        Cart cart = cartRepository.findByUser(user)
                 .orElseGet(() -> {
                     Cart newCart = Cart.builder()
                             .user(user)
@@ -105,17 +106,23 @@ public class CartService {
                     return cartRepository.save(newCart);
                 });
 
-        List<CartItemResponse> items = cart.getCartItems().stream()
-                .map(item -> CartItemResponse.builder()
-                        .id(item.getId())
-                        .cardId(item.getCard().getId())
-                        .cardName(item.getCard().getName())
-                        .imageUrl(item.getCard().getDisplayImageUrl())
-                        .quantity(item.getQuantity())
-                        .unitPrice(item.getUnitPrice())
-                        .totalPrice(item.getTotalPrice())
-                        .maxQuantity(item.getCard().getQuantity() != null ? item.getCard().getQuantity() : 0)
-                        .build())
+        // 장바구니 아이템들을 lazy loading으로 가져오기 위해 명시적으로 조회
+        List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
+
+        List<CartItemResponse> items = cartItems.stream()
+                .map(item -> {
+                    Card card = item.getCard();
+                    return CartItemResponse.builder()
+                            .id(item.getId())
+                            .cardId(card.getId())
+                            .cardName(card.getName() != null ? card.getName() : "")
+                            .imageUrl(card.getDisplayImageUrl() != null ? card.getDisplayImageUrl() : "/images/pokemon-card.png")
+                            .quantity(item.getQuantity())
+                            .unitPrice(item.getUnitPrice() != null ? item.getUnitPrice() : 0L)
+                            .totalPrice(item.getTotalPrice() != null ? item.getTotalPrice() : 0L)
+                            .maxQuantity(card.getQuantity() != null ? card.getQuantity() : 0)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         Long totalPrice = items.stream()
