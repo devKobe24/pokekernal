@@ -371,6 +371,22 @@
           </div>
 
           <div class="form-group">
+            <label for="quantity">수량 (Quantity) - 선택사항</label>
+            <input
+              type="text"
+              id="quantity"
+              name="quantity"
+              placeholder="예: 1"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;"
+            />
+            <div class="help-text">
+              * 보유 중인 카드의 수량을 입력하세요. 숫자만 입력 가능합니다. (기본값: 1)
+            </div>
+          </div>
+
+          <div class="form-group">
             <label for="imageFile">카드 이미지 업로드 - 선택사항</label>
             <input
               type="file"
@@ -569,6 +585,35 @@
             }
             // 소수점이 이미 있으면 또 입력하지 못하게
             if (e.key === "." && this.value.includes(".")) {
+              e.preventDefault();
+            }
+          });
+
+        // 수량 입력란: 숫자만 입력 가능하도록 제한
+        document
+          .getElementById("quantity")
+          .addEventListener("input", function (e) {
+            // 숫자가 아닌 문자 제거
+            this.value = this.value.replace(/[^0-9]/g, "");
+          });
+
+        // 수량 입력란: 키보드 입력 제한
+        document
+          .getElementById("quantity")
+          .addEventListener("keydown", function (e) {
+            // 숫자 키 (0-9), 백스페이스, 삭제, 탭, 화살표 키만 허용
+            if (
+              !(
+                (e.key >= "0" && e.key <= "9") ||
+                e.key === "Backspace" ||
+                e.key === "Delete" ||
+                e.key === "Tab" ||
+                e.key === "ArrowLeft" ||
+                e.key === "ArrowRight" ||
+                e.key === "ArrowUp" ||
+                e.key === "ArrowDown"
+              )
+            ) {
               e.preventDefault();
             }
           });
