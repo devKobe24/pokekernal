@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>회원가입 - PokeKernel</title>
+    <style>
+      body {
+        font-family: Inter, Helvetica, Arial, sans-serif;
+        background: #f6f7fb;
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .card {
+        width: 420px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 6px 18px rgba(31, 41, 55, 0.06);
+        padding: 28px;
+      }
+      .card h2 {
+        font-size: 18px;
+        margin: 0 0 18px;
+        text-align: center;
+      }
+      .field {
+        margin-bottom: 12px;
+      }
+      .field label {
+        display: block;
+        font-size: 13px;
+        color: #374151;
+        margin-bottom: 6px;
+      }
+      .field input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+      .btn {
+        width: 100%;
+        padding: 12px;
+        background: #0ea5e9;
+        border-radius: 6px;
+        color: #fff;
+        border: 0;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .muted {
+        font-size: 13px;
+        color: #6b7280;
+        text-align: center;
+        margin-top: 12px;
+      }
+      .link {
+        color: #0ea5e9;
+        text-decoration: none;
+      }
+      .small {
+        font-size: 12px;
+        color: #9ca3af;
+      }
+      .msg {
+        padding: 8px;
+        border-radius: 6px;
+        margin-bottom: 12px;
+      }
+      .msg.error {
+        background: #fff1f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+      }
+      .msg.success {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #bbf7d0;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card" role="main">
+      <h2>📝 회원가입</h2>
+
+      <div id="register-msg" aria-live="polite" style="display: none"></div>
+
+      <form id="register-form" method="post" action="/register">
+        <div class="field">
+          <label for="email">이메일</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="example@email.com"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="password">비밀번호</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="비밀번호 입력"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="nickname">이름</label>
+          <input
+            id="nickname"
+            name="nickname"
+            type="text"
+            placeholder="홍길동"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="address">주소</label>
+          <input
+            id="address"
+            name="address"
+            type="text"
+            placeholder="서울시 강남구..."
+          />
+        </div>
+
+        <button class="btn" type="submit">가입하기</button>
+      </form>
+
+      <p class="muted small">
+        이미 계정이 있으신가요? <a class="link" href="/admin/login">로그인</a>
+      </p>
+      <p style="text-align: center; margin-top: 8px">
+        <a class="small link" href="/">홈으로 돌아가기</a>
+      </p>
+    </main>
+
+    <script>
+      (function () {
+        const form = document.getElementById("register-form");
+        const msgBox = document.getElementById("register-msg");
+        function showMsg(text, type) {
+          msgBox.style.display = "block";
+          msgBox.textContent = text;
+          msgBox.className = "msg " + (type === "error" ? "error" : "success");
+        }
+        function clearMsg() {
+          msgBox.style.display = "none";
+          msgBox.textContent = "";
+          msgBox.className = "";
+        }
+
+        form.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          clearMsg();
+
+          const fd = new FormData(form);
+          const csrfToken =
+            document.querySelector('meta[name="_csrf"]')?.content;
+          const csrfHeader =
+            document.querySelector('meta[name="_csrf_header"]')?.content ||
+            "X-CSRF-TOKEN";
+
+          try {
+            const res = await fetch(form.action, {
+              method: "POST",
+              headers: Object.assign(
+                { "X-Requested-With": "XMLHttpRequest" },
+                csrfToken ? { [csrfHeader]: csrfToken } : {}
+              ),
+              body: fd,
+            });
+
+            if (res.ok) {
+              const body = await res
+                .json()
+                .catch(() => ({ message: "회원가입이 완료되었습니다." }));
+              showMsg(
+                body.message ||
+                  "회원가입이 완료되었습니다. 로그인 후 이용해주세요.",
+                "success"
+              );
+              form.reset();
+              setTimeout(() => {
+                window.location.href = "/cards";
+              }, 900);
+            } else {
+              const body = await res
+                .json()
+                .catch(() => ({ message: "가입에 실패했습니다." }));
+              showMsg(
+                body.message || "가입에 실패했습니다. 다시 시도해주세요.",
+                "error"
+              );
+            }
+          } catch (err) {
+            showMsg("네트워크 오류가 발생했습니다.", "error");
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

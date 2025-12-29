@@ -36,6 +36,8 @@ public class ProdSecurityConfig {
 
                         // 3. 관리자 로그인 페이지는 모두 접근 가능
                         .requestMatchers("/admin/login").permitAll()
+                        // 회원가입 페이지는 인증 없이 접근 가능하도록 허용
+                        .requestMatchers("/register").permitAll()
 
                         // 4. 카드 목록 및 상세 페이지 허용
                         .requestMatchers("/cards/**").permitAll()
@@ -68,7 +70,7 @@ public class ProdSecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutRequestMatcher(new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/admin/logout"))
-                        .logoutSuccessUrl("/admin/login?logout=true")
+                        .logoutSuccessUrl("/cards")
                         .permitAll()
                 );
         // Prod 환경에서는 H2 Console 관련 설정(CSRF ignore, FrameOptions)을 하지 않음으로써 보안 강화

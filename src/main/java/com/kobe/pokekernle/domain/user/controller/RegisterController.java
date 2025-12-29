@@ -27,8 +27,8 @@ public class RegisterController {
 
     @GetMapping("/register")
     public String registerRedirect() {
-        // Redirect to cards list and instruct it to open the signup modal
-        return "redirect:/cards?signup=1";
+        // Render a dedicated registration page
+        return "register"; // templates/register.html
     }
 
     @PostMapping(value = "/register")

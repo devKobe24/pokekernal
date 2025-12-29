@@ -43,6 +43,8 @@ public class DevSecurityConfig {
                         .requestMatchers("/sitemap.xml", "/robots.txt").permitAll()
                         // 4. 로그인 페이지는 모두 접근 가능
                         .requestMatchers("/admin/login").permitAll()
+                        // 회원가입 페이지는 인증 없이 접근 가능하도록 허용
+                        .requestMatchers("/register").permitAll()
                         // 5. 관리자 페이지는 ADMIN 권한 필요
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/cards/**").permitAll() // 카드 목록 페이지 허용
@@ -63,7 +65,7 @@ public class DevSecurityConfig {
                 // 로그아웃 설정
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/admin/logout"))
-                        .logoutSuccessUrl("/admin/login?logout=true")
+                        .logoutSuccessUrl("/cards")
                         .permitAll()
                 )
                 // H2 Console은 iframe을 사용하므로 X-Frame-Options 설정 필요
