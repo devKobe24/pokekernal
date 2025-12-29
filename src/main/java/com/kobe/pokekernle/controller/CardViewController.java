@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -31,9 +32,15 @@ public class CardViewController {
     private final CardService cardService;
 
     @GetMapping
-    public String list(Model model) {
+    public String list(Model model, @RequestParam(value = "signup", required = false) String signup) {
         List<CardListResponse> cards = cardService.getAllCards();
         model.addAttribute("cards", cards);
+        if ("1".equals(signup)) {
+            model.addAttribute("showRegisterModal", true);
+        }
+        if ("success".equals(signup)) {
+            model.addAttribute("registerSuccess", true);
+        }
         return "cards/list"; // src/main/resources/templates/cards/list.html
     }
 

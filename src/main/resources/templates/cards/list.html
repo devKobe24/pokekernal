@@ -2,13 +2,52 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <title>PokeKernel - Collection</title>
     <link rel="stylesheet" href="/css/card-list.css" />
   </head>
   <body>
-    <header style="position: relative;">
-      <a href="/admin/login" style="position: absolute; top: 0; right: 0; padding: 10px 20px; background-color: #4338ca; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; transition: background-color 0.3s;">Admin</a>
-      <div style="text-align: center;">
+    <header style="position: relative">
+      <div
+        style="
+          position: absolute;
+          top: 0;
+          right: 0;
+          display: flex;
+          gap: 8px;
+          padding: 10px;
+        "
+      >
+        <a
+          id="signup-btn"
+          href="/register"
+          style="
+            padding: 10px 16px;
+            background-color: #10b981;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+          "
+          >회원 가입</a
+        >
+        <a
+          href="/admin/login"
+          style="
+            padding: 10px 16px;
+            background-color: #4338ca;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+          "
+          >Admin</a
+        >
+      </div>
+      <div style="text-align: center">
         <h1>My Pokémon Collection</h1>
         <div class="stats">
           <span>Total Cards: <b th:text="${cards.size()}">0</b></span>
@@ -24,9 +63,11 @@
           th:onclick="|location.href='@{/cards/{id}(id=${card.id})}'|"
         >
           <div class="card-image">
-            <img th:src="${card.imageUrl != null and !card.imageUrl.isEmpty() ? card.imageUrl : '/images/pokemon-card.png'}" 
-                 th:alt="${card.name}" 
-                 onerror="this.src='/images/pokemon-card.png'; this.onerror=null;" />
+            <img
+              th:src="${card.imageUrl != null and !card.imageUrl.isEmpty() ? card.imageUrl : '/images/pokemon-card.png'}"
+              th:alt="${card.name}"
+              onerror="this.src='/images/pokemon-card.png'; this.onerror=null;"
+            />
           </div>
           <div class="card-info">
             <h3 th:text="${card.name}">Card Name</h3>
@@ -35,14 +76,29 @@
               <span class="rarity" th:text="${card.rarity}">Rarity</span>
               <span class="price" th:text="${card.priceDisplay}">Price</span>
             </div>
-            <div class="status-info" style="margin-top: 8px; font-size: 0.85em; color: #666;">
-              <div th:if="${card.cardCondition != null}" style="margin-top: 4px;">
-                <span style="font-weight: bold;">카드 상태:</span> 
-                <span th:text="${card.cardConditionDesc != null ? card.cardConditionDesc : card.cardCondition}">-</span>
+            <div
+              class="status-info"
+              style="margin-top: 8px; font-size: 0.85em; color: #666"
+            >
+              <div
+                th:if="${card.cardCondition != null}"
+                style="margin-top: 4px"
+              >
+                <span style="font-weight: bold">카드 상태:</span>
+                <span
+                  th:text="${card.cardConditionDesc != null ? card.cardConditionDesc : card.cardCondition}"
+                  >-</span
+                >
               </div>
-              <div th:if="${card.collectionStatus != null}" style="margin-top: 4px;">
-                <span style="font-weight: bold;">컬렉션 상태:</span> 
-                <span th:text="${card.collectionStatusDesc != null ? card.collectionStatusDesc : card.collectionStatus}">-</span>
+              <div
+                th:if="${card.collectionStatus != null}"
+                style="margin-top: 4px"
+              >
+                <span style="font-weight: bold">컬렉션 상태:</span>
+                <span
+                  th:text="${card.collectionStatusDesc != null ? card.collectionStatusDesc : card.collectionStatus}"
+                  >-</span
+                >
               </div>
             </div>
           </div>
@@ -55,5 +111,179 @@
     </main>
 
     <script src="/js/app.bundle.js"></script>
+    <!-- Registration Modal -->
+    <div
+      id="register-modal"
+      class="modal"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <div
+        style="
+          background: white;
+          padding: 20px;
+          border-radius: 8px;
+          width: 320px;
+          max-width: 90%;
+        "
+      >
+        <h2 style="margin-top: 0">회원 가입</h2>
+        <form id="register-form" method="post" action="/register">
+          <div
+            id="register-msg"
+            aria-live="polite"
+            style="margin-bottom: 8px"
+          ></div>
+          <div style="margin-bottom: 8px">
+            <label>이메일</label
+            ><input
+              name="email"
+              type="email"
+              required
+              style="width: 100%; padding: 8px"
+            />
+          </div>
+          <div style="margin-bottom: 8px">
+            <label>비밀번호</label
+            ><input
+              name="password"
+              type="password"
+              required
+              style="width: 100%; padding: 8px"
+            />
+          </div>
+          <div style="margin-bottom: 8px">
+            <label>닉네임</label
+            ><input
+              name="nickname"
+              type="text"
+              required
+              style="width: 100%; padding: 8px"
+            />
+          </div>
+          <div
+            style="
+              display: flex;
+              gap: 8px;
+              justify-content: flex-end;
+              margin-top: 12px;
+            "
+          >
+            <button
+              type="button"
+              id="register-cancel"
+              style="padding: 8px 12px"
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              style="
+                padding: 8px 12px;
+                background: #10b981;
+                color: white;
+                border: none;
+                border-radius: 6px;
+              "
+            >
+              가입
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const modal = document.getElementById("register-modal");
+        const cancel = document.getElementById("register-cancel");
+        const signupBtn = document.getElementById("signup-btn");
+        const form = document.getElementById("register-form");
+        const msgBox = document.getElementById("register-msg");
+
+        function openModal() {
+          modal.style.display = "flex";
+        }
+        function closeModal() {
+          modal.style.display = "none";
+        }
+
+        if (cancel) cancel.addEventListener("click", closeModal);
+
+        // If arrived with ?signup=1 open modal
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("signup") === "1") openModal();
+        if (params.get("signup") === "success") {
+          // show success inside modal area (or a toast)
+          alert("회원 가입이 완료되었습니다. 로그인 후 이용해주세요.");
+          history.replaceState(null, "", window.location.pathname);
+        }
+
+        // Enhance UX: if on /cards, open modal instead of full navigation
+        if (signupBtn) {
+          signupBtn.addEventListener("click", function (e) {
+            if (window.location.pathname === "/cards") {
+              e.preventDefault();
+              openModal();
+            }
+          });
+        }
+
+        // AJAX submit handler
+        form.addEventListener("submit", async function (e) {
+          // If JS enabled, handle via AJAX to keep modal open and show messages
+          e.preventDefault();
+          msgBox.textContent = "";
+          msgBox.style.color = "";
+
+          const fd = new FormData(form);
+          const csrfToken =
+            document.querySelector('meta[name="_csrf"]').content;
+          const csrfHeader = document.querySelector(
+            'meta[name="_csrf_header"]'
+          ).content;
+
+          try {
+            const res = await fetch(form.action, {
+              method: "POST",
+              headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                [csrfHeader]: csrfToken,
+              },
+              body: fd,
+            });
+
+            if (res.ok) {
+              const body = await res
+                .json()
+                .catch(() => ({ message: "회원가입이 완료되었습니다." }));
+              msgBox.style.color = "green";
+              msgBox.textContent = body.message || "회원가입이 완료되었습니다.";
+              // Optionally close modal after short delay
+              setTimeout(() => {
+                closeModal();
+                // optionally reset form
+                form.reset();
+              }, 900);
+            } else {
+              const body = await res
+                .json()
+                .catch(() => ({ message: "가입에 실패했습니다." }));
+              msgBox.style.color = "crimson";
+              msgBox.textContent = body.message || "가입에 실패했습니다.";
+            }
+          } catch (err) {
+            msgBox.style.color = "crimson";
+            msgBox.textContent = "네트워크 오류가 발생했습니다.";
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
