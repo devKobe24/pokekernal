@@ -62,12 +62,15 @@ public class Card extends BaseTimeEntity {
     @Column(precision = 12, scale = 0)
     private Long salePrice; // 희망 판매 가격 (원화, KRW)
 
+    @Column(precision = 10, scale = 0)
+    private Integer quantity; // 수량 (기본값: 1)
+
     // 외부 API(예: TCGPlayer)와의 연동을 위한 ID
     @Column(unique = true)
     private String externalId;
 
     @Builder
-    public Card(String name, String setName, String number, Rarity rarity, CardCondition cardCondition, CollectionStatus collectionStatus, String imageUrl, String uploadedImageUrl, Long salePrice, String externalId) {
+    public Card(String name, String setName, String number, Rarity rarity, CardCondition cardCondition, CollectionStatus collectionStatus, String imageUrl, String uploadedImageUrl, Long salePrice, Integer quantity, String externalId) {
         this.name = name;
         this.setName = setName;
         this.number = number;
@@ -77,6 +80,7 @@ public class Card extends BaseTimeEntity {
         this.imageUrl = imageUrl;
         this.uploadedImageUrl = uploadedImageUrl;
         this.salePrice = salePrice;
+        this.quantity = quantity != null ? quantity : 1; // 기본값 1
         this.externalId = externalId;
     }
 
@@ -113,7 +117,7 @@ public class Card extends BaseTimeEntity {
      * 카드 정보 수정
      */
     public void updateCard(String name, String setName, String number, Rarity rarity, CardCondition cardCondition, CollectionStatus collectionStatus,
-                          String imageUrl, String uploadedImageUrl, Long salePrice) {
+                          String imageUrl, String uploadedImageUrl, Long salePrice, Integer quantity) {
         if (name != null && !name.isBlank()) {
             this.name = name;
         }
@@ -140,6 +144,9 @@ public class Card extends BaseTimeEntity {
         }
         if (salePrice != null) {
             this.salePrice = salePrice;
+        }
+        if (quantity != null) {
+            this.quantity = quantity;
         }
     }
 }
