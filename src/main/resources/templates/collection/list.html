@@ -2,20 +2,25 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Collection - PokeKernel</title>
     <link rel="stylesheet" href="/css/card-list.css" />
     <style>
+      * {
+        box-sizing: border-box;
+      }
       .table-container {
         max-width: 1200px;
         margin: 40px auto;
         background: white;
         border-radius: 10px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        overflow: hidden;
+        overflow-x: auto;
       }
       table {
         width: 100%;
         border-collapse: collapse;
+        min-width: 600px;
       }
       th,
       td {
@@ -37,6 +42,43 @@
         object-fit: contain;
         border-radius: 4px;
         background: #eee;
+      }
+      
+      /* 모바일 대응 */
+      @media (max-width: 768px) {
+        body {
+          padding: 10px;
+        }
+        .table-container {
+          margin: 20px auto;
+        }
+        .summary-card {
+          flex-direction: column;
+          gap: 15px;
+          padding: 15px;
+        }
+        .summary-item {
+          width: 100%;
+        }
+        div[style*="max-width: 1200px"] {
+          flex-direction: column;
+          gap: 10px;
+          align-items: flex-start !important;
+        }
+        .back-btn {
+          font-size: 0.9em;
+        }
+        h2 {
+          font-size: 1.3em;
+        }
+        th, td {
+          padding: 10px 8px;
+          font-size: 0.9em;
+        }
+        .thumb {
+          width: 40px;
+          height: 56px;
+        }
       }
       .gain {
         color: #16a34a;

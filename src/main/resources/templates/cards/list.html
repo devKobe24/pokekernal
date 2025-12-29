@@ -2,10 +2,64 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="_csrf" th:content="${_csrf.token}" />
     <meta name="_csrf_header" th:content="${_csrf.headerName}" />
     <title>PokeKernel - Collection</title>
     <link rel="stylesheet" href="/css/card-list.css" />
+    <style>
+      /* 모바일 대응 스타일 */
+      @media (max-width: 768px) {
+        header {
+          padding-top: 60px;
+        }
+        header > div:first-child {
+          position: fixed !important;
+          top: 0;
+          right: 0;
+          left: 0;
+          background: white;
+          padding: 8px !important;
+          gap: 4px !important;
+          z-index: 9999;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        header > div:first-child button,
+        header > div:first-child a {
+          padding: 8px 10px !important;
+          font-size: 0.8em !important;
+          white-space: nowrap;
+        }
+        header > div:first-child > div {
+          gap: 4px !important;
+        }
+        header > div:first-child span {
+          display: none;
+        }
+        .card-grid {
+          padding: 0 10px;
+        }
+        #login-modal > div,
+        #register-modal > div {
+          width: 95% !important;
+          max-width: 95% !important;
+          padding: 20px !important;
+        }
+        #login-modal h2 {
+          font-size: 22px !important;
+        }
+      }
+      @media (max-width: 480px) {
+        header > div:first-child button,
+        header > div:first-child a {
+          padding: 6px 8px !important;
+          font-size: 0.75em !important;
+        }
+        header h1 {
+          font-size: 1.5em;
+        }
+      }
+    </style>
   </head>
   <body>
     <header style="position: relative">

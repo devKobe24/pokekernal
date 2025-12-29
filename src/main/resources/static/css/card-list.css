@@ -19,6 +19,50 @@ header {
   margin: 0 auto;
 }
 
+/* 모바일 대응 */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+  
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 0 10px;
+  }
+  
+  .card-image {
+    height: 200px;
+  }
+  
+  .card-info {
+    padding: 12px;
+  }
+  
+  .card-info h3 {
+    font-size: 1rem;
+  }
+  
+  header {
+    margin-bottom: 20px;
+    padding-top: 50px;
+  }
+  
+  header h1 {
+    font-size: 1.5em;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-image {
+    height: 250px;
+  }
+}
+
 .card-item {
   background: white;
   border-radius: 10px;

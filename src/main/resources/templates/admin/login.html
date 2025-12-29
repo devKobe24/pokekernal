@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Login - PokeKernel</title>
     <link rel="stylesheet" href="/css/card-list.css" />
     <style>
@@ -12,6 +13,7 @@
         min-height: 100vh;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         margin: 0;
+        padding: 20px;
       }
       .login-container {
         background: white;
@@ -20,6 +22,21 @@
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         width: 100%;
         max-width: 400px;
+      }
+      
+      /* 모바일 대응 */
+      @media (max-width: 768px) {
+        body {
+          padding: 15px;
+          align-items: flex-start;
+          padding-top: 20px;
+        }
+        .login-container {
+          padding: 25px;
+        }
+        .login-header h1 {
+          font-size: 1.5em;
+        }
       }
       .login-header {
         text-align: center;

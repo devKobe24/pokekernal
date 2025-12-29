@@ -2,9 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin - Card List</title>
     <link rel="stylesheet" href="/css/card-list.css" />
     <style>
+      * {
+        box-sizing: border-box;
+      }
       .admin-header {
         max-width: 1200px;
         margin: 0 auto;
@@ -12,6 +16,34 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+      }
+      
+      /* 모바일 대응 */
+      @media (max-width: 768px) {
+        .admin-header {
+          flex-direction: column;
+          gap: 15px;
+          align-items: flex-start;
+        }
+        .admin-header h1 {
+          font-size: 1.3em;
+        }
+        .admin-actions {
+          flex-direction: column;
+          width: 100%;
+        }
+        .admin-btn {
+          width: 100%;
+          text-align: center;
+        }
+        .stats-bar {
+          flex-direction: column;
+          gap: 10px;
+          align-items: flex-start !important;
+        }
+        body {
+          padding: 10px;
+        }
       }
       .admin-header h1 {
         margin: 0;
