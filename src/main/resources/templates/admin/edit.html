@@ -212,6 +212,23 @@
         </div>
 
         <div class="form-group">
+          <label for="quantity">수량 (Quantity)</label>
+          <input
+            type="text"
+            id="quantity"
+            name="quantity"
+            th:value="${card.quantity != null ? card.quantity : 1}"
+            placeholder="예: 1"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;"
+          />
+          <div class="help-text">
+            * 보유 중인 카드의 수량을 입력하세요. 숫자만 입력 가능합니다. (기본값: 1)
+          </div>
+        </div>
+
+        <div class="form-group">
           <label for="imageUrl">이미지 URL</label>
           <input type="text" id="imageUrl" name="imageUrl" th:value="${card.imageUrl}" />
           <div class="help-text">외부 이미지 URL을 입력하거나 아래에서 새 이미지를 업로드하세요.</div>
@@ -239,6 +256,23 @@
           <div class="help-text">새 이미지를 업로드하면 기존 이미지를 대체합니다.</div>
           <div id="imagePreview" style="margin-top: 10px; display: none;">
             <img id="previewImg" src="" alt="미리보기" style="max-width: 300px; max-height: 300px; border: 1px solid #ddd; border-radius: 5px;" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="quantity">수량 (Quantity)</label>
+          <input
+            type="text"
+            id="quantity"
+            name="quantity"
+            th:value="${card.quantity != null ? card.quantity : 1}"
+            placeholder="예: 1"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;"
+          />
+          <div class="help-text">
+            * 보유 중인 카드의 수량을 입력하세요. 숫자만 입력 가능합니다. (기본값: 1)
           </div>
         </div>
 
@@ -299,6 +333,31 @@
           reader.readAsDataURL(file);
         } else {
           previewDiv.style.display = 'none';
+        }
+      });
+
+      // 수량 입력란: 숫자만 입력 가능하도록 제한
+      document.getElementById('quantity').addEventListener('input', function(e) {
+        // 숫자가 아닌 문자 제거
+        this.value = this.value.replace(/[^0-9]/g, '');
+      });
+
+      // 수량 입력란: 키보드 입력 제한
+      document.getElementById('quantity').addEventListener('keydown', function(e) {
+        // 숫자 키 (0-9), 백스페이스, 삭제, 탭, 화살표 키만 허용
+        if (
+          !(
+            (e.key >= '0' && e.key <= '9') ||
+            e.key === 'Backspace' ||
+            e.key === 'Delete' ||
+            e.key === 'Tab' ||
+            e.key === 'ArrowLeft' ||
+            e.key === 'ArrowRight' ||
+            e.key === 'ArrowUp' ||
+            e.key === 'ArrowDown'
+          )
+        ) {
+          e.preventDefault();
         }
       });
 
