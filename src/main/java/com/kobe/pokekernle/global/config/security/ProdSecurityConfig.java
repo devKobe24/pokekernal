@@ -52,6 +52,9 @@ public class ProdSecurityConfig {
                         // 8. SEO 파일 허용
                         .requestMatchers("/sitemap.xml", "/robots.txt").permitAll()
 
+                        // API 경로는 인증된 사용자만 접근 가능
+                        .requestMatchers("/api/cart/**").authenticated()
+                        .requestMatchers("/api/orders/**").authenticated()
                         // 9. 관리자 페이지는 ADMIN 권한만 접근 가능
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
@@ -68,10 +71,14 @@ public class ProdSecurityConfig {
                         .passwordParameter("password")
                         .permitAll()
                 )
-                .logout(logout -> logout
+                        .logout(logout -> logout
                         .logoutRequestMatcher(new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/admin/logout"))
                         .logoutSuccessUrl("/cards")
                         .permitAll()
+                )
+                // API 요청에 대해서는 CSRF 보호 비활성화
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/**")
                 );
         // Prod 환경에서는 H2 Console 관련 설정(CSRF ignore, FrameOptions)을 하지 않음으로써 보안 강화
 

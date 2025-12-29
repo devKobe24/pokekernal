@@ -45,6 +45,9 @@ public class DevSecurityConfig {
                         .requestMatchers("/admin/login").permitAll()
                         // 회원가입 페이지는 인증 없이 접근 가능하도록 허용
                         .requestMatchers("/register").permitAll()
+                        // API 경로는 인증된 사용자만 접근 가능
+                        .requestMatchers("/api/cart/**").authenticated()
+                        .requestMatchers("/api/orders/**").authenticated()
                         // 5. 관리자 페이지는 ADMIN 권한 필요
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/cards/**").permitAll() // 카드 목록 페이지 허용
@@ -78,7 +81,7 @@ public class DevSecurityConfig {
                         .ignoringRequestMatchers(PathRequest.toH2Console())
                         // API 요청에 대해서는 CSRF 보호 비활성화 (POST 403 에러 해결)
                         // 개발 환경에서는 /admin/** POST 요청도 CSRF 비활성화 (편의상)
-                        .ignoringRequestMatchers("/admin/**")
+                        .ignoringRequestMatchers("/admin/**", "/api/**")
                 );
 
         return http.build();
