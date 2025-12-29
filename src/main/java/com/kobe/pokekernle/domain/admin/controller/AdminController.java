@@ -87,6 +87,7 @@ public class AdminController {
             @RequestParam(required = false) MultipartFile imageFile,
             @RequestParam(required = false) String imageUrl,
             @RequestParam(required = false) String salePrice,
+            @RequestParam(required = false) String quantity,
             @RequestParam(required = false) String currentPriceUsd,
             RedirectAttributes redirectAttributes
     ) {
@@ -117,6 +118,20 @@ public class AdminController {
                     salePriceLong = Long.parseLong(salePrice.trim());
                 } catch (NumberFormatException e) {
                     log.warn("[ADMIN] 판매 가격 파싱 실패: {}", salePrice);
+                }
+            }
+
+            // 수량 파싱
+            Integer quantityInt = null;
+            if (quantity != null && !quantity.isBlank()) {
+                try {
+                    quantityInt = Integer.parseInt(quantity.trim());
+                    if (quantityInt < 1) {
+                        log.warn("[ADMIN] 수량은 1 이상이어야 합니다: {}", quantity);
+                        quantityInt = 1; // 기본값으로 설정
+                    }
+                } catch (NumberFormatException e) {
+                    log.warn("[ADMIN] 수량 파싱 실패: {}", quantity);
                 }
             }
 
@@ -161,6 +176,7 @@ public class AdminController {
                     .imageUrl(imageUrl != null && !imageUrl.isBlank() ? imageUrl.trim() : null)
                     .uploadedImageUrl(uploadedImageUrl)
                     .salePrice(salePriceLong)
+                    .quantity(quantityInt)
                     .build();
 
             cardRepository.save(card);
@@ -250,6 +266,7 @@ public class AdminController {
             @RequestParam(required = false) String imageUrl,
             @RequestParam(required = false) MultipartFile imageFile,
             @RequestParam(required = false) String salePrice,
+            @RequestParam(required = false) String quantity,
             @RequestParam(required = false) String currentPriceUsd,
             RedirectAttributes redirectAttributes
     ) {
@@ -276,6 +293,20 @@ public class AdminController {
                 salePriceLong = Long.parseLong(salePrice.trim());
             } catch (NumberFormatException e) {
                 log.warn("[ADMIN] 판매 가격 파싱 실패: {}", salePrice);
+            }
+        }
+
+        // 수량 파싱
+        Integer quantityInt = null;
+        if (quantity != null && !quantity.isBlank()) {
+            try {
+                quantityInt = Integer.parseInt(quantity.trim());
+                if (quantityInt < 1) {
+                    log.warn("[ADMIN] 수량은 1 이상이어야 합니다: {}", quantity);
+                    quantityInt = 1; // 기본값으로 설정
+                }
+            } catch (NumberFormatException e) {
+                log.warn("[ADMIN] 수량 파싱 실패: {}", quantity);
             }
         }
 
@@ -319,7 +350,8 @@ public class AdminController {
                 collectionStatusEnum,
                 imageUrl,
                 uploadedImageUrl != null ? uploadedImageUrl : card.getUploadedImageUrl(),
-                salePriceLong
+                salePriceLong,
+                quantityInt
         );
 
         cardRepository.save(card);
