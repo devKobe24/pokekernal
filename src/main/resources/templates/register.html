@@ -7,10 +7,15 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>회원가입 - PokeKernel</title>
     <style>
+      * {
+        box-sizing: border-box;
+      }
+      
       body {
         font-family: Inter, Helvetica, Arial, sans-serif;
         background: #f6f7fb;
         margin: 0;
+        padding: 0;
         height: 100vh;
         display: flex;
         align-items: center;
@@ -18,10 +23,12 @@
       }
       .card {
         width: 420px;
+        max-width: 90%;
         background: #fff;
         border-radius: 8px;
         box-shadow: 0 6px 18px rgba(31, 41, 55, 0.06);
         padding: 28px;
+        margin: 0 auto;
       }
       .card h2 {
         font-size: 18px;
@@ -43,6 +50,7 @@
         border: 1px solid #e5e7eb;
         border-radius: 6px;
         font-size: 14px;
+        box-sizing: border-box;
       }
       .btn {
         width: 100%;
