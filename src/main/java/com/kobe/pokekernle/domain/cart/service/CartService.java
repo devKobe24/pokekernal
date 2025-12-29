@@ -1,0 +1,193 @@
+package com.kobe.pokekernle.domain.cart.service;
+
+import com.kobe.pokekernle.domain.cart.dto.request.AddCartItemRequest;
+import com.kobe.pokekernle.domain.cart.dto.response.CartItemResponse;
+import com.kobe.pokekernle.domain.cart.dto.response.CartResponse;
+import com.kobe.pokekernle.domain.cart.entity.Cart;
+import com.kobe.pokekernle.domain.cart.entity.CartItem;
+import com.kobe.pokekernle.domain.cart.repository.CartItemRepository;
+import com.kobe.pokekernle.domain.cart.repository.CartRepository;
+import com.kobe.pokekernle.domain.card.entity.Card;
+import com.kobe.pokekernle.domain.card.repository.CardRepository;
+import com.kobe.pokekernle.domain.user.entity.User;
+import com.kobe.pokekernle.domain.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+@Slf4j
+public class CartService {
+
+    private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
+    private final CardRepository cardRepository;
+    private final UserRepository userRepository;
+
+    /**
+     * 사용자의 장바구니 가져오기 (없으면 생성)
+     */
+    @Transactional
+    public Cart getOrCreateCart(User user) {
+        return cartRepository.findByUser(user)
+                .orElseGet(() -> {
+                    Cart cart = Cart.builder()
+                            .user(user)
+                            .build();
+                    return cartRepository.save(cart);
+                });
+    }
+
+    /**
+     * 장바구니에 아이템 추가
+     */
+    @Transactional
+    public void addItem(Long userId, AddCartItemRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        Card card = cardRepository.findById(request.getCardId())
+                .orElseThrow(() -> new IllegalArgumentException("카드를 찾을 수 없습니다."));
+
+        if (card.getSalePrice() == null || card.getSalePrice() == 0) {
+            throw new IllegalArgumentException("판매 가격이 설정되지 않은 카드입니다.");
+        }
+
+        if (card.getQuantity() == null || card.getQuantity() < request.getQuantity()) {
+            throw new IllegalArgumentException("요청한 수량이 재고를 초과합니다.");
+        }
+
+        Cart cart = getOrCreateCart(user);
+        
+        // 이미 장바구니에 있는 아이템인지 확인
+        CartItem existingItem = cartItemRepository.findByCartIdAndCardId(cart.getId(), card.getId())
+                .orElse(null);
+
+        if (existingItem != null) {
+            // 기존 아이템이 있으면 수량 추가
+            int newQuantity = existingItem.getQuantity() + request.getQuantity();
+            if (newQuantity > card.getQuantity()) {
+                throw new IllegalArgumentException("요청한 수량이 재고를 초과합니다. (최대: " + card.getQuantity() + "개)");
+            }
+            existingItem.updateQuantity(newQuantity);
+        } else {
+            // 새 아이템 추가
+            CartItem cartItem = CartItem.builder()
+                    .cart(cart)
+                    .card(card)
+                    .quantity(request.getQuantity())
+                    .unitPrice(card.getSalePrice())
+                    .build();
+            cart.addItem(cartItem);
+        }
+
+        log.info("[CART] 장바구니에 추가됨 - User ID: {}, Card ID: {}, Quantity: {}", userId, request.getCardId(), request.getQuantity());
+    }
+
+    /**
+     * 장바구니 조회
+     */
+    public CartResponse getCart(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        Cart cart = cartRepository.findByUserWithItems(user)
+                .orElseGet(() -> {
+                    Cart newCart = Cart.builder()
+                            .user(user)
+                            .build();
+                    return cartRepository.save(newCart);
+                });
+
+        List<CartItemResponse> items = cart.getCartItems().stream()
+                .map(item -> CartItemResponse.builder()
+                        .id(item.getId())
+                        .cardId(item.getCard().getId())
+                        .cardName(item.getCard().getName())
+                        .imageUrl(item.getCard().getDisplayImageUrl())
+                        .quantity(item.getQuantity())
+                        .unitPrice(item.getUnitPrice())
+                        .totalPrice(item.getTotalPrice())
+                        .maxQuantity(item.getCard().getQuantity() != null ? item.getCard().getQuantity() : 0)
+                        .build())
+                .collect(Collectors.toList());
+
+        Long totalPrice = items.stream()
+                .mapToLong(CartItemResponse::getTotalPrice)
+                .sum();
+
+        int totalItems = items.stream()
+                .mapToInt(CartItemResponse::getQuantity)
+                .sum();
+
+        return CartResponse.builder()
+                .items(items)
+                .totalPrice(totalPrice)
+                .totalItems(totalItems)
+                .build();
+    }
+
+    /**
+     * 장바구니 아이템 수량 업데이트
+     */
+    @Transactional
+    public void updateItemQuantity(Long userId, Long cartItemId, Integer quantity) {
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니 아이템을 찾을 수 없습니다."));
+
+        if (!cartItem.getCart().getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
+
+        if (quantity < 1) {
+            throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
+        }
+
+        if (quantity > cartItem.getCard().getQuantity()) {
+            throw new IllegalArgumentException("요청한 수량이 재고를 초과합니다. (최대: " + cartItem.getCard().getQuantity() + "개)");
+        }
+
+        cartItem.updateQuantity(quantity);
+        log.info("[CART] 수량 업데이트 - CartItem ID: {}, Quantity: {}", cartItemId, quantity);
+    }
+
+    /**
+     * 장바구니 아이템 삭제
+     */
+    @Transactional
+    public void removeItem(Long userId, Long cartItemId) {
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니 아이템을 찾을 수 없습니다."));
+
+        if (!cartItem.getCart().getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("권한이 없습니다.");
+        }
+
+        cartItemRepository.delete(cartItem);
+        log.info("[CART] 아이템 삭제 - CartItem ID: {}", cartItemId);
+    }
+
+    /**
+     * 장바구니 비우기
+     */
+    @Transactional
+    public void clearCart(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        Cart cart = cartRepository.findByUser(user)
+                .orElse(null);
+
+        if (cart != null) {
+            cart.clear();
+            log.info("[CART] 장바구니 비우기 - User ID: {}", userId);
+        }
+    }
+}
+
