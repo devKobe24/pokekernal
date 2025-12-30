@@ -39,7 +39,6 @@ public class CardViewController {
     @GetMapping
     public String list(Model model, 
                        @RequestParam(value = "signup", required = false) String signup,
-                       @RequestParam(value = "login", required = false) String login,
                        Principal principal,
                        Authentication authentication) {
         List<CardListResponse> cards = cardService.getAllCards();
@@ -68,9 +67,6 @@ public class CardViewController {
         }
         if ("success".equals(signup)) {
             model.addAttribute("registerSuccess", true);
-        }
-        if ("1".equals(login)) {
-            model.addAttribute("showLoginModal", true);
         }
         // 인증 정보 추가
         model.addAttribute("isAuthenticated", authentication != null && authentication.isAuthenticated());
