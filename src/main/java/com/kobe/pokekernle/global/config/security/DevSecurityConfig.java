@@ -33,6 +33,15 @@ public class DevSecurityConfig {
         return new SessionRegistryImpl();
     }
 
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+
+    public DevSecurityConfig(CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler,
+                            CustomAuthenticationFailureHandler customAuthenticationFailureHandler) {
+        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
+        this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
         http
@@ -49,7 +58,8 @@ public class DevSecurityConfig {
                         .requestMatchers("/uploads/**").permitAll()
                         // 6. SEO 파일 허용
                         .requestMatchers("/sitemap.xml", "/robots.txt").permitAll()
-                        // 4. 로그인 페이지는 모두 접근 가능
+                        // 4. 로그인 및 회원가입 페이지는 모두 접근 가능
+                        .requestMatchers("/login").permitAll()
                         .requestMatchers("/admin/login").permitAll()
                         // 회원가입 페이지는 인증 없이 접근 가능하도록 허용
                         .requestMatchers("/register").permitAll()
@@ -72,10 +82,12 @@ public class DevSecurityConfig {
                 )
                 // 폼 로그인 설정
                 .formLogin(login -> login
-                        .loginPage("/admin/login") // 로그인 페이지 경로
-                        .loginProcessingUrl("/admin/login") // 로그인 처리 URL
-                        .defaultSuccessUrl("/admin/cards/register", true) // 로그인 성공 시 이동할 경로
-                        .failureUrl("/admin/login?error=true") // 로그인 실패 시 이동할 경로
+                        .loginPage("/login") // 로그인 페이지 경로
+                        .loginProcessingUrl("/login") // 로그인 처리 URL
+                        .successHandler(customAuthenticationSuccessHandler) // 커스텀 성공 핸들러 사용 (AJAX 지원, 역할별 리다이렉트)
+                        .failureHandler(customAuthenticationFailureHandler) // 커스텀 실패 핸들러 사용 (AJAX 지원)
+                        .defaultSuccessUrl("/cards", true) // 일반 요청 시 리다이렉트 경로 (fallback, 역할별로 동적 변경됨)
+                        .failureUrl("/login?error=true") // 일반 요청 시 실패 URL (fallback)
                         .usernameParameter("email") // 이메일을 사용자명으로 사용
                         .passwordParameter("password")
                         .permitAll()
@@ -110,6 +122,7 @@ public class DevSecurityConfig {
                         // API 요청에 대해서는 CSRF 보호 비활성화 (POST 403 에러 해결)
                         // 개발 환경에서는 /admin/** POST 요청도 CSRF 비활성화 (편의상)
                         .ignoringRequestMatchers("/admin/**", "/api/**")
+                        .ignoringRequestMatchers(new AntPathRequestMatcher("/login", "POST")) // 로그인 POST 요청도 CSRF 비활성화
                 );
 
         return http.build();

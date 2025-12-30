@@ -33,6 +33,15 @@ public class ProdSecurityConfig {
         return new SessionRegistryImpl();
     }
 
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+
+    public ProdSecurityConfig(CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler,
+                             CustomAuthenticationFailureHandler customAuthenticationFailureHandler) {
+        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
+        this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
         http
@@ -43,7 +52,8 @@ public class ProdSecurityConfig {
                         // 2. 메인 페이지 및 로그인 페이지 허용
                         .requestMatchers("/", "/error").permitAll()
 
-                        // 3. 관리자 로그인 페이지는 모두 접근 가능
+                        // 3. 로그인 및 회원가입 페이지는 모두 접근 가능
+                        .requestMatchers("/login").permitAll()
                         .requestMatchers("/admin/login").permitAll()
                         // 회원가입 페이지는 인증 없이 접근 가능하도록 허용
                         .requestMatchers("/register").permitAll()
@@ -79,10 +89,12 @@ public class ProdSecurityConfig {
                 )
                 // 운영 환경에서는 폼 로그인 기능을 활성화
                 .formLogin(login -> login
-                        .loginPage("/admin/login") // 관리자 로그인 페이지 경로
-                        .loginProcessingUrl("/admin/login") // 로그인 처리 URL
-                        .defaultSuccessUrl("/admin/cards/register", true) // 로그인 성공 시 이동할 경로
-                        .failureUrl("/admin/login?error=true") // 로그인 실패 시 이동할 경로
+                        .loginPage("/login") // 로그인 페이지 경로
+                        .loginProcessingUrl("/login") // 로그인 처리 URL
+                        .successHandler(customAuthenticationSuccessHandler) // 커스텀 성공 핸들러 사용 (AJAX 지원, 역할별 리다이렉트)
+                        .failureHandler(customAuthenticationFailureHandler) // 커스텀 실패 핸들러 사용 (AJAX 지원)
+                        .defaultSuccessUrl("/cards", true) // 일반 요청 시 리다이렉트 경로 (fallback, 역할별로 동적 변경됨)
+                        .failureUrl("/login?error=true") // 일반 요청 시 실패 URL (fallback)
                         .usernameParameter("email") // 이메일을 사용자명으로 사용
                         .passwordParameter("password")
                         .permitAll()
@@ -110,9 +122,11 @@ public class ProdSecurityConfig {
                         .contentTypeOptions(contentType -> {}) // MIME 타입 스니핑 방지
                         .xssProtection(xss -> {}) // XSS 보호 활성화
                 )
-                // API 요청에 대해서는 CSRF 보호 비활성화
+                // API 요청 및 로그인 처리에 대해서는 CSRF 보호 비활성화
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/**")
+                        .ignoringRequestMatchers(new AntPathRequestMatcher("/login", "POST")) // POST 요청만 CSRF 비활성화
+                        .ignoringRequestMatchers(new AntPathRequestMatcher("/admin/login", "POST")) // 관리자 로그인 POST 요청도 CSRF 비활성화
                 );
         // Prod 환경에서는 H2 Console 관련 설정(CSRF ignore, FrameOptions)을 하지 않음으로써 보안 강화
 

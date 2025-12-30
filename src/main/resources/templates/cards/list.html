@@ -707,35 +707,101 @@
             loginMsgBox.style.color = "";
 
             const fd = new FormData(loginForm);
-            const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+            const csrfTokenElement = document.querySelector('meta[name="_csrf"]');
+            const csrfHeaderElement = document.querySelector('meta[name="_csrf_header"]');
+            const csrfToken = csrfTokenElement ? csrfTokenElement.content : '';
+            const csrfHeader = csrfHeaderElement ? csrfHeaderElement.content : 'X-CSRF-TOKEN';
+
+            // FormData를 사용할 때는 Content-Type을 설정하지 않음 (브라우저가 자동으로 설정)
+            const headers = {
+              "X-Requested-With": "XMLHttpRequest"
+            };
+            
+            // CSRF 토큰이 있으면 헤더에 추가
+            if (csrfToken) {
+              headers[csrfHeader] = csrfToken;
+            }
+
+            console.log("[LOGIN] 요청 URL:", loginForm.action);
+            console.log("[LOGIN] CSRF 토큰:", csrfToken ? "있음" : "없음");
+            console.log("[LOGIN] 헤더:", headers);
 
             try {
               const res = await fetch(loginForm.action, {
                 method: "POST",
-                headers: {
-                  "X-Requested-With": "XMLHttpRequest",
-                  [csrfHeader]: csrfToken,
-                },
+                headers: headers,
                 body: fd,
+                credentials: "same-origin", // 쿠키 포함
+                redirect: "manual", // 리다이렉트를 수동으로 처리
               });
 
-              if (res.ok || res.redirected) {
-                // 로그인 성공 시 페이지 새로고침
+              console.log("[LOGIN] 응답 상태:", res.status, res.statusText);
+              console.log("[LOGIN] Content-Type:", res.headers.get("content-type"));
+              console.log("[LOGIN] Response type:", res.type);
+              console.log("[LOGIN] Response URL:", res.url);
+
+              // 리다이렉트 응답 처리 (redirect: "manual"일 때)
+              if (res.type === "opaqueredirect" || res.status === 0) {
+                // 리다이렉트된 경우
+                console.log("[LOGIN] 리다이렉트 감지");
+                closeLoginModal();
+                window.location.href = "/cards";
+                return;
+              }
+
+              if (!res.ok && res.status !== 401) {
+                // 401은 실패 핸들러에서 처리되므로 여기서는 다른 오류만 처리
+                console.error("[LOGIN] HTTP 오류:", res.status, res.statusText);
+                throw new Error(`HTTP error! status: ${res.status}`);
+              }
+
+              // JSON 응답 확인 (성공/실패 모두 JSON으로 응답)
+              const contentType = res.headers.get("content-type");
+              if (contentType && contentType.includes("application/json")) {
+                const data = await res.json();
+                if (data.success) {
+                  // 로그인 성공 - 모달 닫고 페이지 새로고침
+                  closeLoginModal();
+                  window.location.href = data.redirectUrl || "/cards";
+                } else {
+                  // 로그인 실패
+                  loginMsgBox.style.display = "block";
+                  loginMsgBox.style.background = "#fee2e2";
+                  loginMsgBox.style.color = "#991b1b";
+                  loginMsgBox.style.border = "1px solid #fecaca";
+                  loginMsgBox.textContent = data.message || "이메일 또는 비밀번호가 올바르지 않습니다.";
+                }
+              } else if (res.ok) {
+                // JSON이 아닌 경우 (일반 요청으로 처리된 경우)
+                closeLoginModal();
                 window.location.href = "/cards";
               } else {
-                loginMsgBox.style.display = "block";
-                loginMsgBox.style.background = "#fee2e2";
-                loginMsgBox.style.color = "#991b1b";
-                loginMsgBox.style.border = "1px solid #fecaca";
-                loginMsgBox.textContent = "이메일 또는 비밀번호가 올바르지 않습니다.";
+                // HTTP 오류 응답 (JSON이 아닌 경우) - 실패 핸들러가 호출되지 않은 경우
+                // 응답 본문을 읽어서 확인
+                try {
+                  const errorData = await res.json();
+                  loginMsgBox.style.display = "block";
+                  loginMsgBox.style.background = "#fee2e2";
+                  loginMsgBox.style.color = "#991b1b";
+                  loginMsgBox.style.border = "1px solid #fecaca";
+                  loginMsgBox.textContent = errorData.message || "이메일 또는 비밀번호가 올바르지 않습니다.";
+                } catch (parseErr) {
+                  // JSON 파싱 실패 시 기본 메시지 표시
+                  loginMsgBox.style.display = "block";
+                  loginMsgBox.style.background = "#fee2e2";
+                  loginMsgBox.style.color = "#991b1b";
+                  loginMsgBox.style.border = "1px solid #fecaca";
+                  loginMsgBox.textContent = "이메일 또는 비밀번호가 올바르지 않습니다.";
+                }
               }
             } catch (err) {
+              console.error("로그인 오류:", err);
+              console.error("오류 상세:", err.message, err.stack);
               loginMsgBox.style.display = "block";
               loginMsgBox.style.background = "#fee2e2";
               loginMsgBox.style.color = "#991b1b";
               loginMsgBox.style.border = "1px solid #fecaca";
-              loginMsgBox.textContent = "네트워크 오류가 발생했습니다.";
+              loginMsgBox.textContent = "네트워크 오류가 발생했습니다. 다시 시도해주세요.";
             }
           });
         }
