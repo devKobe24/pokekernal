@@ -210,6 +210,8 @@
         font-weight: bold;
         cursor: pointer;
         transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
       }
       .admin-tab-btn:hover {
         background: #d1d5db;
@@ -224,8 +226,11 @@
     </style>
   </head>
   <body>
-    <div style="text-align: center; margin-bottom: 20px">
-      <a href="/cards" class="back-btn">← Go to Market</a>
+    <div style="text-align: center; margin-bottom: 30px; margin-top: 20px;">
+      <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <a href="/cards" class="admin-tab-btn">← Go to Market</a>
+        <a href="/admin/notices" class="admin-tab-btn" style="background: #6b7280; color: white;">📢 공지사항 관리</a>
+      </div>
     </div>
 
     <div class="admin-container">

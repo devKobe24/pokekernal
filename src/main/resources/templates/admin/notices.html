@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>공지사항 관리 - PokeKernel</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e5e7eb;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 1.8em;
+        color: #333;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.2s;
+      }
+
+      .btn-primary {
+        background-color: #4338ca;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: #3730a3;
+      }
+
+      .btn-secondary {
+        background-color: #6b7280;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background-color: #4b5563;
+      }
+
+      .btn-success {
+        background-color: #10b981;
+        color: white;
+      }
+
+      .btn-success:hover {
+        background-color: #059669;
+      }
+
+      .btn-danger {
+        background-color: #ef4444;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background-color: #dc2626;
+      }
+
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.875em;
+      }
+
+      .notice-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+      }
+
+      .notice-table th,
+      .notice-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .notice-table th {
+        background-color: #f9fafb;
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .notice-table tbody tr:hover {
+        background-color: #f9fafb;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.875em;
+        font-weight: 500;
+      }
+
+      .status-active {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+
+      .status-inactive {
+        background-color: #fee2e2;
+        color: #991b1b;
+      }
+
+      .priority-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.875em;
+        font-weight: 600;
+        background-color: #fef3c7;
+        color: #92400e;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      }
+
+      .modal.show {
+        display: flex;
+      }
+
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        width: 600px;
+        max-width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e5e7eb;
+      }
+
+      .modal-header h2 {
+        margin: 0;
+        font-size: 1.5em;
+        color: #333;
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 28px;
+        cursor: pointer;
+        color: #999;
+        line-height: 1;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+      }
+
+      .close-btn:hover {
+        background-color: #f3f4f6;
+        color: #333;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 0.9em;
+        color: #374151;
+        margin-bottom: 6px;
+        font-weight: 500;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+      }
+
+      .form-group textarea {
+        resize: vertical;
+        min-height: 150px;
+      }
+
+      .form-group input[type="checkbox"] {
+        width: auto;
+        margin-right: 8px;
+      }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6b7280;
+      }
+
+      .content-preview {
+        max-height: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #6b7280;
+        font-size: 0.9em;
+      }
+
+      /* 모바일 대응 */
+      @media (max-width: 768px) {
+        body {
+          padding: 10px;
+        }
+
+        .container {
+          padding: 15px;
+        }
+
+        .header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 15px;
+        }
+
+        .notice-table {
+          font-size: 0.9em;
+        }
+
+        .notice-table th,
+        .notice-table td {
+          padding: 8px;
+        }
+
+        .modal-content {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>공지사항 관리</h1>
+        <div style="display: flex; gap: 10px;">
+          <a href="/admin/cards/register" class="btn btn-secondary">카드 관리</a>
+          <button type="button" class="btn btn-primary" onclick="openCreateModal()">
+            + 공지사항 추가
+          </button>
+        </div>
+      </div>
+
+      <div th:if="${notices != null and !notices.isEmpty()}">
+        <table class="notice-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">ID</th>
+              <th>제목</th>
+              <th style="width: 100px;">상태</th>
+              <th style="width: 80px;">우선순위</th>
+              <th style="width: 150px;">등록일</th>
+              <th style="width: 150px;">관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="notice : ${notices}">
+              <td th:text="${notice.id}"></td>
+              <td>
+                <div style="font-weight: 600; margin-bottom: 4px;" th:text="${notice.title}"></div>
+                <div class="content-preview" th:text="${notice.content}"></div>
+              </td>
+              <td>
+                <span
+                  class="status-badge"
+                  th:classappend="${notice.isActive} ? 'status-active' : 'status-inactive'"
+                  th:text="${notice.isActive} ? '활성' : '비활성'"
+                ></span>
+              </td>
+              <td>
+                <span class="priority-badge" th:text="${notice.priority}"></span>
+              </td>
+              <td th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+              <td>
+                <div style="display: flex; gap: 6px;">
+                  <button
+                    type="button"
+                    class="btn btn-success btn-sm"
+                    th:onclick="|openEditModal(${notice.id})|"
+                  >
+                    수정
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-danger btn-sm"
+                    th:onclick="|deleteNotice(${notice.id})|"
+                  >
+                    삭제
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div th:if="${notices == null or notices.isEmpty()}" class="empty-state">
+        <h2>등록된 공지사항이 없습니다</h2>
+        <p>새 공지사항을 추가해주세요.</p>
+      </div>
+    </div>
+
+    <!-- 공지사항 생성/수정 모달 -->
+    <div id="notice-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">공지사항 추가</h2>
+          <button type="button" class="close-btn" onclick="closeModal()">×</button>
+        </div>
+
+        <form id="notice-form">
+          <input type="hidden" id="notice-id" />
+
+          <div class="form-group">
+            <label for="notice-title">제목 *</label>
+            <input
+              type="text"
+              id="notice-title"
+              name="title"
+              required
+              placeholder="공지사항 제목을 입력하세요"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="notice-content">내용 *</label>
+            <textarea
+              id="notice-content"
+              name="content"
+              required
+              placeholder="공지사항 내용을 입력하세요"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="notice-priority">우선순위</label>
+            <input
+              type="number"
+              id="notice-priority"
+              name="priority"
+              value="0"
+              min="0"
+              placeholder="높을수록 먼저 표시됩니다"
+            />
+            <small style="color: #6b7280; font-size: 0.85em; margin-top: 4px; display: block;">
+              높은 숫자가 먼저 표시됩니다. (기본값: 0)
+            </small>
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="notice-active" name="isActive" checked />
+              <label for="notice-active" style="margin: 0;">활성화</label>
+            </div>
+            <small style="color: #6b7280; font-size: 0.85em; margin-top: 4px; display: block;">
+              활성화된 공지사항만 사용자에게 표시됩니다.
+            </small>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">
+              취소
+            </button>
+            <button type="submit" class="btn btn-primary" id="submit-btn">
+              저장
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const modal = document.getElementById('notice-modal');
+      const form = document.getElementById('notice-form');
+      const modalTitle = document.getElementById('modal-title');
+      const submitBtn = document.getElementById('submit-btn');
+      let currentNoticeId = null;
+
+      function openCreateModal() {
+        currentNoticeId = null;
+        modalTitle.textContent = '공지사항 추가';
+        submitBtn.textContent = '저장';
+        form.reset();
+        document.getElementById('notice-active').checked = true;
+        document.getElementById('notice-priority').value = '0';
+        modal.classList.add('show');
+      }
+
+      async function openEditModal(id) {
+        try {
+          const response = await fetch(`/api/notices/${id}`);
+          if (!response.ok) {
+            alert('공지사항을 불러오는데 실패했습니다.');
+            return;
+          }
+
+          const notice = await response.json();
+          currentNoticeId = notice.id;
+          modalTitle.textContent = '공지사항 수정';
+          submitBtn.textContent = '수정';
+          
+          document.getElementById('notice-id').value = notice.id;
+          document.getElementById('notice-title').value = notice.title;
+          document.getElementById('notice-content').value = notice.content;
+          document.getElementById('notice-priority').value = notice.priority;
+          document.getElementById('notice-active').checked = notice.isActive;
+
+          modal.classList.add('show');
+        } catch (error) {
+          console.error('공지사항 로드 실패:', error);
+          alert('공지사항을 불러오는데 실패했습니다.');
+        }
+      }
+
+      function closeModal() {
+        modal.classList.remove('show');
+        form.reset();
+        currentNoticeId = null;
+      }
+
+      async function deleteNotice(id) {
+        if (!confirm('정말 삭제하시겠습니까?')) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/notices/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            alert('공지사항이 삭제되었습니다.');
+            location.reload();
+          } else {
+            alert(data.message || '삭제에 실패했습니다.');
+          }
+        } catch (error) {
+          console.error('삭제 실패:', error);
+          alert('삭제 중 오류가 발생했습니다.');
+        }
+      }
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = {
+          title: document.getElementById('notice-title').value,
+          content: document.getElementById('notice-content').value,
+          priority: parseInt(document.getElementById('notice-priority').value) || 0,
+          isActive: document.getElementById('notice-active').checked
+        };
+
+        const url = currentNoticeId 
+          ? `/api/notices/${currentNoticeId}`
+          : '/api/notices';
+        const method = currentNoticeId ? 'PUT' : 'POST';
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = '처리 중...';
+
+        try {
+          const response = await fetch(url, {
+            method: method,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            alert(currentNoticeId ? '공지사항이 수정되었습니다.' : '공지사항이 추가되었습니다.');
+            closeModal();
+            location.reload();
+          } else {
+            alert(data.message || '저장에 실패했습니다.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = currentNoticeId ? '수정' : '저장';
+          }
+        } catch (error) {
+          console.error('저장 실패:', error);
+          alert('저장 중 오류가 발생했습니다.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = currentNoticeId ? '수정' : '저장';
+        }
+      });
+
+      // 모달 외부 클릭 시 닫기
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+
+      // ESC 키로 모달 닫기
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+          closeModal();
+        }
+      });
+    </script>
+  </body>
+</html>
+

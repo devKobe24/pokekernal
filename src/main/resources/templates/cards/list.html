@@ -541,6 +541,104 @@
       </div>
     </div>
 
+    <!-- 공지사항 모달 -->
+    <div
+      id="notice-modal"
+      class="modal"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+        z-index: 10001;
+      "
+    >
+      <div
+        style="
+          background: white;
+          padding: 30px;
+          border-radius: 12px;
+          width: 500px;
+          max-width: 90%;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+          position: relative;
+        "
+      >
+        <!-- Close button -->
+        <button
+          id="notice-close"
+          type="button"
+          style="
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+          "
+          aria-label="닫기"
+          onmouseover="this.style.background='#f3f4f6'; this.style.color='#333';"
+          onmouseout="this.style.background='none'; this.style.color='#999';"
+        >
+          ×
+        </button>
+
+        <h2 style="margin: 0 0 20px 0; font-size: 1.5em; color: #333; padding-right: 30px;">
+          📢 공지사항
+        </h2>
+
+        <div id="notice-content" style="margin-bottom: 20px;">
+          <h3 id="notice-title" style="margin: 0 0 15px 0; font-size: 1.2em; color: #111827; font-weight: 600;"></h3>
+          <div id="notice-body" style="color: #374151; line-height: 1.6; white-space: pre-wrap;"></div>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; flex: 1;">
+            <input type="checkbox" id="notice-dont-show-today" />
+            <span style="font-size: 0.9em; color: #6b7280;">오늘 하루 보지 않기</span>
+          </label>
+          <button
+            type="button"
+            onclick="closeNoticeModal()"
+            style="
+              padding: 10px 20px;
+              background: #4338ca;
+              color: white;
+              border: none;
+              border-radius: 6px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.2s;
+            "
+            onmouseover="this.style.background='#3730a3';"
+            onmouseout="this.style.background='#4338ca';"
+          >
+            확인
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 공지사항 데이터를 hidden input으로 전달 -->
+    <input type="hidden" id="notice-data-id" th:value="${latestNotice != null ? latestNotice.id : ''}" />
+    <input type="hidden" id="notice-data-title" th:value="${latestNotice != null ? latestNotice.title : ''}" />
+    <input type="hidden" id="notice-data-content" th:value="${latestNotice != null ? latestNotice.content : ''}" />
+
     <script>
       (function () {
         // Registration Modal
@@ -704,6 +802,113 @@
         if (showRegisterModal) {
           openRegisterModal();
         }
+
+        // 공지사항 모달 처리
+        const noticeModal = document.getElementById("notice-modal");
+        const noticeClose = document.getElementById("notice-close");
+        const noticeTitle = document.getElementById("notice-title");
+        const noticeBody = document.getElementById("notice-body");
+        const noticeDontShowToday = document.getElementById("notice-dont-show-today");
+
+        function openNoticeModal() {
+          if (noticeModal) {
+            noticeModal.style.display = "flex";
+          }
+        }
+
+        function closeNoticeModal() {
+          if (noticeModal) {
+            noticeModal.style.display = "none";
+            
+            // 오늘 하루 보지 않기 체크 시 쿠키에 저장
+            if (noticeDontShowToday && noticeDontShowToday.checked) {
+              const noticeDataIdEl = document.getElementById('notice-data-id');
+              const noticeId = noticeDataIdEl ? noticeDataIdEl.value : null;
+              if (noticeId && noticeId.trim() !== '') {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0);
+                document.cookie = `notice_${noticeId}_hidden=true; expires=${tomorrow.toUTCString()}; path=/`;
+              }
+            }
+          }
+        }
+
+        if (noticeClose) {
+          noticeClose.addEventListener("click", closeNoticeModal);
+        }
+
+        // 모달 외부 클릭 시 닫기
+        if (noticeModal) {
+          noticeModal.addEventListener("click", function(e) {
+            if (e.target === noticeModal) {
+              closeNoticeModal();
+            }
+          });
+        }
+
+        // ESC 키로 모달 닫기
+        document.addEventListener("keydown", function(e) {
+          if (e.key === "Escape" && noticeModal && noticeModal.style.display === "flex") {
+            closeNoticeModal();
+          }
+        });
+
+        // 공지사항이 있으면 모달 표시
+        // hidden input에서 데이터 읽기
+        const noticeDataIdEl = document.getElementById('notice-data-id');
+        const noticeDataTitleEl = document.getElementById('notice-data-title');
+        const noticeDataContentEl = document.getElementById('notice-data-content');
+        
+        const latestNoticeId = noticeDataIdEl ? noticeDataIdEl.value : null;
+        const latestNoticeTitle = noticeDataTitleEl ? noticeDataTitleEl.value : null;
+        const latestNoticeContent = noticeDataContentEl ? noticeDataContentEl.value : null;
+        
+        console.log('[DEBUG] 공지사항 데이터:', {
+          id: latestNoticeId,
+          title: latestNoticeTitle,
+          hasContent: !!latestNoticeContent && latestNoticeContent.length > 0,
+          noticeTitleEl: noticeTitle,
+          noticeBodyEl: noticeBody
+        });
+        
+        if (latestNoticeId && latestNoticeId.trim() !== '' && latestNoticeTitle && latestNoticeTitle.trim() !== '' && noticeTitle && noticeBody) {
+          // 쿠키에서 오늘 하루 보지 않기 체크
+          const cookieName = `notice_${latestNoticeId}_hidden`;
+          const cookies = document.cookie.split(';');
+          let shouldHide = false;
+          
+          for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === cookieName && value === 'true') {
+              shouldHide = true;
+              console.log('[DEBUG] 공지사항이 쿠키에 의해 숨겨짐:', cookieName);
+              break;
+            }
+          }
+
+          if (!shouldHide) {
+            noticeTitle.textContent = latestNoticeTitle;
+            noticeBody.textContent = latestNoticeContent || '';
+            console.log('[DEBUG] 공지사항 모달 표시 시도');
+            // 약간의 지연을 주어 DOM이 완전히 렌더링된 후 모달 표시
+            setTimeout(function() {
+              openNoticeModal();
+            }, 100);
+          } else {
+            console.log('[DEBUG] 공지사항 모달 표시하지 않음 (쿠키로 인해 숨김)');
+          }
+        } else {
+          console.log('[DEBUG] 공지사항 데이터가 없거나 DOM 요소를 찾을 수 없음', {
+            hasId: !!latestNoticeId && latestNoticeId.trim() !== '',
+            hasTitle: !!latestNoticeTitle && latestNoticeTitle.trim() !== '',
+            hasTitleEl: !!noticeTitle,
+            hasBodyEl: !!noticeBody
+          });
+        }
+
+        // 전역 함수로 등록
+        window.closeNoticeModal = closeNoticeModal;
       })();
     </script>
   </body>

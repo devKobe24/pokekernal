@@ -64,6 +64,10 @@ public class ProdSecurityConfig {
                         // API 경로는 인증된 사용자만 접근 가능
                         .requestMatchers("/api/cart/**").authenticated()
                         .requestMatchers("/api/orders/**").authenticated()
+                        // 공지사항 API는 공개 (활성화된 공지사항만)
+                        .requestMatchers("/api/notices/active").permitAll()
+                        // 공지사항 관리 API는 ADMIN 권한 필요
+                        .requestMatchers("/api/notices/**").hasRole("ADMIN")
                         // 장바구니 및 주문서 페이지는 인증된 사용자만 접근 가능
                         .requestMatchers("/cart").authenticated()
                         .requestMatchers("/checkout").authenticated()

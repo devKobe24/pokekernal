@@ -3,6 +3,8 @@ package com.kobe.pokekernle.controller;
 import com.kobe.pokekernle.domain.card.dto.response.CardDetailResponse;
 import com.kobe.pokekernle.domain.card.response.CardListResponse;
 import com.kobe.pokekernle.domain.card.service.CardService;
+import com.kobe.pokekernle.domain.notice.dto.response.NoticeResponse;
+import com.kobe.pokekernle.domain.notice.service.NoticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -32,6 +34,7 @@ import java.util.List;
 public class CardViewController {
 
     private final CardService cardService;
+    private final NoticeService noticeService;
 
     @GetMapping
     public String list(Model model, 
@@ -41,6 +44,25 @@ public class CardViewController {
                        Authentication authentication) {
         List<CardListResponse> cards = cardService.getAllCards();
         model.addAttribute("cards", cards);
+        
+        // 공지사항 정보 추가
+        try {
+            List<NoticeResponse> notices = noticeService.getActiveNotices();
+            // 가장 우선순위가 높은 공지사항 1개만 모달로 표시
+            if (notices != null && !notices.isEmpty()) {
+                NoticeResponse latestNotice = notices.get(0);
+                model.addAttribute("latestNotice", latestNotice);
+                // 디버깅용 로그
+                System.out.println("[DEBUG] 공지사항 로드 성공 - ID: " + latestNotice.getId() + ", 제목: " + latestNotice.getTitle());
+            } else {
+                System.out.println("[DEBUG] 활성화된 공지사항이 없습니다.");
+            }
+        } catch (Exception e) {
+            // 공지사항 로드 실패 시 로그 출력
+            System.err.println("[ERROR] 공지사항 로드 실패: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
         if ("1".equals(signup)) {
             model.addAttribute("showRegisterModal", true);
         }

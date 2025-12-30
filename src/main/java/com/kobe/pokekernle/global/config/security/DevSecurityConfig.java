@@ -59,6 +59,10 @@ public class DevSecurityConfig {
                         // 장바구니 및 주문서 페이지는 인증된 사용자만 접근 가능
                         .requestMatchers("/cart").authenticated()
                         .requestMatchers("/checkout").authenticated()
+                        // 공지사항 API는 공개 (활성화된 공지사항만)
+                        .requestMatchers("/api/notices/active").permitAll()
+                        // 공지사항 관리 API는 ADMIN 권한 필요
+                        .requestMatchers("/api/notices/**").hasRole("ADMIN")
                         // 5. 관리자 페이지는 ADMIN 권한 필요
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/cards/**").permitAll() // 카드 목록 페이지 허용
