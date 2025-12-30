@@ -37,10 +37,13 @@ public class CartService {
     public Cart getOrCreateCart(User user) {
         return cartRepository.findByUser(user)
                 .orElseGet(() -> {
+                    log.info("[CART] 새 장바구니 생성 - User ID: {}", user.getId());
                     Cart cart = Cart.builder()
                             .user(user)
                             .build();
-                    return cartRepository.save(cart);
+                    Cart savedCart = cartRepository.save(cart);
+                    log.info("[CART] 장바구니 생성 완료 - Cart ID: {}, User ID: {}", savedCart.getId(), user.getId());
+                    return savedCart;
                 });
     }
 
@@ -76,6 +79,8 @@ public class CartService {
                 throw new IllegalArgumentException("요청한 수량이 재고를 초과합니다. (최대: " + card.getQuantity() + "개)");
             }
             existingItem.updateQuantity(newQuantity);
+            log.info("[CART] 장바구니 아이템 수량 업데이트 - User ID: {}, Card ID: {}, Quantity: {} -> {}", 
+                    userId, request.getCardId(), existingItem.getQuantity() - request.getQuantity(), newQuantity);
         } else {
             // 새 아이템 추가
             CartItem cartItem = CartItem.builder()
@@ -85,9 +90,16 @@ public class CartService {
                     .unitPrice(card.getSalePrice())
                     .build();
             cart.addItem(cartItem);
+            // CartItem을 데이터베이스에 저장 (CascadeType.ALL이지만 명시적으로 저장하는 것이 안전)
+            cartItemRepository.save(cartItem);
+            log.info("[CART] 장바구니에 새 아이템 추가됨 - User ID: {}, Card ID: {}, Quantity: {}, CartItem ID: {}", 
+                    userId, request.getCardId(), request.getQuantity(), cartItem.getId());
         }
+        
+        // Cart를 저장하여 변경사항 반영 (CascadeType.ALL이 있지만 명시적으로 저장)
+        cartRepository.save(cart);
 
-        log.info("[CART] 장바구니에 추가됨 - User ID: {}, Card ID: {}, Quantity: {}", userId, request.getCardId(), request.getQuantity());
+        log.info("[CART] 장바구니에 추가 완료 - User ID: {}, Card ID: {}, Quantity: {}", userId, request.getCardId(), request.getQuantity());
     }
 
     /**
@@ -98,16 +110,23 @@ public class CartService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+        log.info("[CART] 장바구니 조회 시작 - User ID: {}, Email: {}", userId, user.getEmail());
+
         Cart cart = cartRepository.findByUser(user)
                 .orElseGet(() -> {
+                    log.info("[CART] 장바구니가 없어 새로 생성 - User ID: {}", userId);
                     Cart newCart = Cart.builder()
                             .user(user)
                             .build();
                     return cartRepository.save(newCart);
                 });
 
+        log.info("[CART] 장바구니 찾음 - Cart ID: {}, User ID: {}", cart.getId(), userId);
+
         // 장바구니 아이템들을 lazy loading으로 가져오기 위해 명시적으로 조회
         List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
+        
+        log.info("[CART] 장바구니 아이템 개수 - Cart ID: {}, Items Count: {}", cart.getId(), cartItems.size());
 
         List<CartItemResponse> items = cartItems.stream()
                 .map(item -> {

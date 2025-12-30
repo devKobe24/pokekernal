@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -31,7 +34,32 @@
         margin-bottom: 20px;
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 10px;
+      }
+
+      .header-buttons {
+        display: flex;
+        gap: 10px;
+      }
+
+      .header-btn {
+        background-color: #4338ca;
+        color: white;
+        text-decoration: none;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        display: inline-block;
+      }
+
+      .header-btn:hover {
+        background-color: #3730a3;
+        text-decoration: none;
       }
 
       .checkout-left {
@@ -354,6 +382,22 @@
         #wrap {
           height: 400px;
         }
+
+        .checkout-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 15px;
+        }
+
+        .header-buttons {
+          width: 100%;
+          flex-direction: column;
+        }
+
+        .header-btn {
+          width: 100%;
+          text-align: center;
+        }
       }
     </style>
   </head>
@@ -361,8 +405,11 @@
     <div class="checkout-container">
       <div class="checkout-left">
         <div class="checkout-header">
-          <span>8</span>
-          주문/결제
+          <span>주문/결제</span>
+          <div class="header-buttons">
+            <a href="/cart" class="header-btn">장바구니</a>
+            <a href="/cards" class="header-btn">계속 쇼핑하기</a>
+          </div>
         </div>
 
         <!-- 정보 입력 -->
@@ -370,11 +417,14 @@
           <h3 class="section-title">정보 입력</h3>
 
           <!-- 주문 상품 정보 -->
-          <div class="section-title" style="font-size: 0.95em; margin-bottom: 12px; margin-top: 20px;">
+          <div
+            class="section-title"
+            style="font-size: 0.95em; margin-bottom: 12px; margin-top: 20px"
+          >
             주문 상품 정보
           </div>
           <div th:each="item : ${cart.items}">
-            <div class="product-info" style="margin-bottom: 12px;">
+            <div class="product-info" style="margin-bottom: 12px">
               <img
                 th:src="${item.imageUrl}"
                 th:alt="${item.cardName}"
@@ -383,29 +433,54 @@
               />
               <div class="product-details">
                 <div class="product-name" th:text="${item.cardName}"></div>
-                <div class="product-option" th:text="'수량 ' + ${item.quantity} + '개'"></div>
-                <div class="product-price" th:text="'₩' + ${#numbers.formatInteger(item.totalPrice, 0, 'COMMA')}"></div>
+                <div
+                  class="product-option"
+                  th:text="'수량 ' + ${item.quantity} + '개'"
+                ></div>
+                <div
+                  class="product-price"
+                  th:text="'₩' + ${#numbers.formatInteger(item.totalPrice, 0, 'COMMA')}"
+                ></div>
               </div>
             </div>
           </div>
 
           <!-- 배송지 정보 -->
-          <div class="section-title" style="font-size: 0.95em; margin-bottom: 12px; margin-top: 20px;">
+          <div
+            class="section-title"
+            style="font-size: 0.95em; margin-bottom: 12px; margin-top: 20px"
+          >
             배송지 정보
           </div>
           <div class="address-header">
             <div></div>
-            <button type="button" class="load-default-btn" onclick="loadDefaultAddress()">기본 배송지 불러오기</button>
+            <button
+              type="button"
+              class="load-default-btn"
+              onclick="loadDefaultAddress()"
+            >
+              기본 배송지 불러오기
+            </button>
           </div>
 
           <div class="form-group">
             <label for="recipient-name">받는 분</label>
-            <input type="text" id="recipient-name" name="recipientName" placeholder="이름을 입력하세요" />
+            <input
+              type="text"
+              id="recipient-name"
+              name="recipientName"
+              placeholder="이름을 입력하세요"
+            />
           </div>
 
           <div class="form-group">
             <label for="recipient-phone">연락처</label>
-            <input type="tel" id="recipient-phone" name="recipientPhone" placeholder="연락처를 입력하세요" />
+            <input
+              type="tel"
+              id="recipient-phone"
+              name="recipientPhone"
+              placeholder="연락처를 입력하세요"
+            />
           </div>
 
           <div class="form-group">
@@ -426,13 +501,13 @@
               id="sample3_address"
               placeholder="주소"
               readonly
-              style="margin-bottom: 8px;"
+              style="margin-bottom: 8px"
             />
             <input
               type="text"
               id="sample3_detailAddress"
               placeholder="상세주소"
-              style="margin-bottom: 8px;"
+              style="margin-bottom: 8px"
             />
             <input
               type="text"
@@ -440,30 +515,54 @@
               placeholder="참고항목"
               readonly
             />
-            <input
-              type="hidden"
-              id="delivery-address"
-              name="deliveryAddress"
-            />
-            <div id="wrap" style="display:none;border:1px solid;width:100%;height:300px;margin:5px 0;position:relative">
-              <img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnFoldWrap" style="cursor:pointer;position:absolute;right:0px;top:-1px;z-index:1" onclick="foldDaumPostcode()" alt="접기 버튼">
+            <input type="hidden" id="delivery-address" name="deliveryAddress" />
+            <div
+              id="wrap"
+              style="
+                display: none;
+                border: 1px solid;
+                width: 100%;
+                height: 300px;
+                margin: 5px 0;
+                position: relative;
+              "
+            >
+              <img
+                src="//t1.daumcdn.net/postcode/resource/images/close.png"
+                id="btnFoldWrap"
+                style="
+                  cursor: pointer;
+                  position: absolute;
+                  right: 0px;
+                  top: -1px;
+                  z-index: 1;
+                "
+                onclick="foldDaumPostcode()"
+                alt="접기 버튼"
+              />
             </div>
           </div>
 
           <div class="form-group">
             <label for="delivery-memo">배송 메모</label>
-            <select id="delivery-memo" name="deliveryMemo" onchange="handleDeliveryMemoChange(this)">
+            <select
+              id="delivery-memo"
+              name="deliveryMemo"
+              onchange="handleDeliveryMemoChange(this)"
+            >
               <option value="">배송 시 요청사항을 선택해주세요</option>
               <option value="문 앞에 놓아주세요">문 앞에 놓아주세요</option>
               <option value="경비실에 맡겨주세요">경비실에 맡겨주세요</option>
-              <option value="배송 전 연락 바랍니다">배송 전 연락 바랍니다</option>
+              <option value="배송 전 연락 바랍니다">
+                배송 전 연락 바랍니다
+              </option>
               <option value="직접 입력">직접 입력</option>
             </select>
             <textarea
               id="delivery-memo-custom"
               name="deliveryMemoCustom"
               placeholder="직접 입력하세요"
-              style="display: none; margin-top: 8px;"
+              style="display: none; margin-top: 8px"
             ></textarea>
           </div>
 
@@ -475,17 +574,26 @@
             </div>
             <div class="discount-content" id="discount-content">
               <div class="form-group">
-                <input type="text" placeholder="할인 코드 또는 쿠폰 코드를 입력하세요" />
+                <input
+                  type="text"
+                  placeholder="할인 코드 또는 쿠폰 코드를 입력하세요"
+                />
               </div>
             </div>
           </div>
 
           <!-- 결제 방법 -->
-          <div class="section-title" style="font-size: 0.95em; margin-bottom: 12px; margin-top: 20px;">
+          <div
+            class="section-title"
+            style="font-size: 0.95em; margin-bottom: 12px; margin-top: 20px"
+          >
             결제 방법
           </div>
 
-          <div class="payment-option" onclick="selectPayment('CREDIT_CARD', this)">
+          <div
+            class="payment-option"
+            onclick="selectPayment('CREDIT_CARD', this)"
+          >
             <label>
               <input type="radio" name="paymentMethod" value="CREDIT_CARD" />
               신용카드
@@ -503,29 +611,51 @@
             </div>
           </div>
 
-          <div class="payment-option" onclick="selectPayment('NAVER_PAY', this)">
+          <div
+            class="payment-option"
+            onclick="selectPayment('NAVER_PAY', this)"
+          >
             <label>
               <input type="radio" name="paymentMethod" value="NAVER_PAY" />
               네이버페이
             </label>
           </div>
 
-          <div class="payment-option" onclick="selectPayment('KAKAO_PAY', this)">
+          <div
+            class="payment-option"
+            onclick="selectPayment('KAKAO_PAY', this)"
+          >
             <label>
               <input type="radio" name="paymentMethod" value="KAKAO_PAY" />
               카카오페이
             </label>
           </div>
 
-          <div class="payment-option" onclick="selectPayment('BANK_TRANSFER', this)">
+          <div
+            class="payment-option"
+            onclick="selectPayment('BANK_TRANSFER', this)"
+          >
             <label>
               <input type="radio" name="paymentMethod" value="BANK_TRANSFER" />
               무통장입금
             </label>
             <div class="payment-details">
-              <div style="padding: 12px; background-color: #f9fafb; border-radius: 6px; margin-top: 8px;">
-                <div style="font-size: 0.9em; color: #6b7280; margin-bottom: 4px;">입금 계좌</div>
-                <div style="font-weight: 600; color: #111827;">국민은행 123456-78-901234 (예금주: PokeKernel)</div>
+              <div
+                style="
+                  padding: 12px;
+                  background-color: #f9fafb;
+                  border-radius: 6px;
+                  margin-top: 8px;
+                "
+              >
+                <div
+                  style="font-size: 0.9em; color: #6b7280; margin-bottom: 4px"
+                >
+                  입금 계좌
+                </div>
+                <div style="font-weight: 600; color: #111827">
+                  국민은행 123456-78-901234 (예금주: PokeKernel)
+                </div>
               </div>
             </div>
           </div>
@@ -534,22 +664,35 @@
 
       <!-- 결제 요약 -->
       <div class="checkout-right">
-        <div class="section" style="position: sticky; top: 20px;">
+        <div class="section" style="position: sticky; top: 20px">
           <h3 class="section-title">결제 요약</h3>
 
           <div class="summary-row">
             <span class="summary-label">총 상품 금액</span>
-            <span class="summary-value" id="total-product-price" th:text="'₩' + ${#numbers.formatInteger(cart.totalPrice, 0, 'COMMA')}"></span>
+            <span
+              class="summary-value"
+              id="total-product-price"
+              th:text="'₩' + ${#numbers.formatInteger(cart.totalPrice, 0, 'COMMA')}"
+            ></span>
           </div>
 
           <div class="summary-row">
             <span class="summary-label">배송비</span>
-            <span class="summary-value" id="shipping-fee" th:text="'+₩' + ${#numbers.formatInteger(shippingFee, 0, 'COMMA')}"></span>
+            <span
+              class="summary-value"
+              id="shipping-fee"
+              th:text="'+₩' + ${#numbers.formatInteger(shippingFee, 0, 'COMMA')}"
+            ></span>
           </div>
 
           <div class="summary-row">
             <span class="summary-label">할인 금액</span>
-            <span class="summary-value" id="discount-amount" style="color: #ef4444;">-₩0</span>
+            <span
+              class="summary-value"
+              id="discount-amount"
+              style="color: #ef4444"
+              >-₩0</span
+            >
           </div>
 
           <div class="summary-row total">
@@ -559,10 +702,17 @@
 
           <div class="agreement-checkbox">
             <input type="checkbox" id="agreement" />
-            <label for="agreement">위 주문 내용을 확인하였으며, 결제에 동의합니다.</label>
+            <label for="agreement"
+              >위 주문 내용을 확인하였으며, 결제에 동의합니다.</label
+            >
           </div>
 
-          <button type="button" class="payment-btn" id="payment-btn" onclick="processPayment()">
+          <button
+            type="button"
+            class="payment-btn"
+            id="payment-btn"
+            onclick="processPayment()"
+          >
             <span id="payment-btn-text">결제하기</span>
           </button>
         </div>
@@ -572,118 +722,130 @@
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script>
       // 우편번호 찾기 관련
-      var element_wrap = document.getElementById('wrap');
+      var element_wrap = document.getElementById("wrap");
 
       function foldDaumPostcode() {
-        element_wrap.style.display = 'none';
+        element_wrap.style.display = "none";
       }
 
       function sample3_execDaumPostcode() {
-        var currentScroll = Math.max(document.body.scrollTop, document.documentElement.scrollTop);
+        var currentScroll = Math.max(
+          document.body.scrollTop,
+          document.documentElement.scrollTop
+        );
         new daum.Postcode({
-          oncomplete: function(data) {
-            var addr = '';
-            var extraAddr = '';
+          oncomplete: function (data) {
+            var addr = "";
+            var extraAddr = "";
 
-            if (data.userSelectedType === 'R') {
+            if (data.userSelectedType === "R") {
               addr = data.roadAddress;
             } else {
               addr = data.jibunAddress;
             }
 
-            if(data.userSelectedType === 'R'){
-              if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+            if (data.userSelectedType === "R") {
+              if (data.bname !== "" && /[동|로|가]$/g.test(data.bname)) {
                 extraAddr += data.bname;
               }
-              if(data.buildingName !== '' && data.apartment === 'Y'){
-                extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+              if (data.buildingName !== "" && data.apartment === "Y") {
+                extraAddr +=
+                  extraAddr !== ""
+                    ? ", " + data.buildingName
+                    : data.buildingName;
               }
-              if(extraAddr !== ''){
-                extraAddr = ' (' + extraAddr + ')';
+              if (extraAddr !== "") {
+                extraAddr = " (" + extraAddr + ")";
               }
               document.getElementById("sample3_extraAddress").value = extraAddr;
             } else {
-              document.getElementById("sample3_extraAddress").value = '';
+              document.getElementById("sample3_extraAddress").value = "";
             }
 
-            document.getElementById('sample3_postcode').value = data.zonecode;
+            document.getElementById("sample3_postcode").value = data.zonecode;
             document.getElementById("sample3_address").value = addr;
             document.getElementById("sample3_detailAddress").focus();
 
             updateDeliveryAddress();
 
-            element_wrap.style.display = 'none';
+            element_wrap.style.display = "none";
             document.body.scrollTop = currentScroll;
           },
-          onresize : function(size) {
-            element_wrap.style.height = size.height+'px';
+          onresize: function (size) {
+            element_wrap.style.height = size.height + "px";
           },
-          width : '100%',
-          height : '100%'
+          width: "100%",
+          height: "100%",
         }).embed(element_wrap);
 
-        element_wrap.style.display = 'block';
+        element_wrap.style.display = "block";
       }
 
       function updateDeliveryAddress() {
-        const postcode = document.getElementById('sample3_postcode').value;
-        const address = document.getElementById('sample3_address').value;
-        const detailAddress = document.getElementById('sample3_detailAddress').value;
-        const extraAddress = document.getElementById('sample3_extraAddress').value;
+        const postcode = document.getElementById("sample3_postcode").value;
+        const address = document.getElementById("sample3_address").value;
+        const detailAddress = document.getElementById(
+          "sample3_detailAddress"
+        ).value;
+        const extraAddress = document.getElementById(
+          "sample3_extraAddress"
+        ).value;
 
-        let fullAddress = '';
+        let fullAddress = "";
         if (postcode) fullAddress += `[${postcode}] `;
-        if (address) fullAddress += address + ' ';
+        if (address) fullAddress += address + " ";
         if (detailAddress) fullAddress += detailAddress;
-        if (extraAddress) fullAddress += ' ' + extraAddress;
+        if (extraAddress) fullAddress += " " + extraAddress;
 
-        document.getElementById('delivery-address').value = fullAddress.trim();
+        document.getElementById("delivery-address").value = fullAddress.trim();
       }
 
-      document.addEventListener('DOMContentLoaded', function() {
-        const detailAddressInput = document.getElementById('sample3_detailAddress');
+      document.addEventListener("DOMContentLoaded", function () {
+        const detailAddressInput = document.getElementById(
+          "sample3_detailAddress"
+        );
         if (detailAddressInput) {
-          detailAddressInput.addEventListener('input', updateDeliveryAddress);
-          detailAddressInput.addEventListener('blur', updateDeliveryAddress);
+          detailAddressInput.addEventListener("input", updateDeliveryAddress);
+          detailAddressInput.addEventListener("blur", updateDeliveryAddress);
         }
       });
 
       // 기본 배송지 불러오기
       function loadDefaultAddress() {
         // TODO: 사용자 기본 주소 불러오기 (회원가입 시 입력한 주소)
-        alert('기본 배송지 불러오기 기능은 추후 구현 예정입니다.');
+        alert("기본 배송지 불러오기 기능은 추후 구현 예정입니다.");
       }
 
       // 배송 메모 처리
       function handleDeliveryMemoChange(select) {
-        const customTextarea = document.getElementById('delivery-memo-custom');
-        if (select.value === '직접 입력') {
-          customTextarea.style.display = 'block';
+        const customTextarea = document.getElementById("delivery-memo-custom");
+        if (select.value === "직접 입력") {
+          customTextarea.style.display = "block";
           customTextarea.required = true;
         } else {
-          customTextarea.style.display = 'none';
+          customTextarea.style.display = "none";
           customTextarea.required = false;
         }
       }
 
       // 할인 적용 토글
       function toggleDiscount() {
-        const content = document.getElementById('discount-content');
-        const arrow = document.getElementById('discount-arrow');
-        content.classList.toggle('show');
-        arrow.textContent = content.classList.contains('show') ? '▲' : '▼';
+        const content = document.getElementById("discount-content");
+        const arrow = document.getElementById("discount-arrow");
+        content.classList.toggle("show");
+        arrow.textContent = content.classList.contains("show") ? "▲" : "▼";
       }
 
       // 결제 방법 선택
       function selectPayment(method, element) {
         // 모든 payment-option에서 selected 클래스 제거
-        document.querySelectorAll('.payment-option').forEach(el => {
-          el.classList.remove('selected');
+        document.querySelectorAll(".payment-option").forEach((el) => {
+          el.classList.remove("selected");
         });
-        
+
         // 선택한 옵션에 selected 클래스 추가
-        element.classList.add('selected');
-        
+        element.classList.add("selected");
+
         // 라디오 버튼 체크
         element.querySelector('input[type="radio"]').checked = true;
       }
@@ -691,67 +853,82 @@
       // 최종 결제 금액 계산
       function calculateFinalPrice() {
         // Thymeleaf에서 값 주입
-        const totalProductPriceElement = document.getElementById('total-product-price');
-        const shippingFeeElement = document.getElementById('shipping-fee');
-        
+        const totalProductPriceElement = document.getElementById(
+          "total-product-price"
+        );
+        const shippingFeeElement = document.getElementById("shipping-fee");
+
         // 텍스트에서 숫자 추출
-        const totalProductPrice = parseInt(totalProductPriceElement.textContent.replace(/[^0-9]/g, '')) || 0;
-        const shippingFee = parseInt(shippingFeeElement.textContent.replace(/[^0-9]/g, '')) || 0;
+        const totalProductPrice =
+          parseInt(
+            totalProductPriceElement.textContent.replace(/[^0-9]/g, "")
+          ) || 0;
+        const shippingFee =
+          parseInt(shippingFeeElement.textContent.replace(/[^0-9]/g, "")) || 0;
         const discountAmount = 0; // TODO: 할인 금액 계산
 
         const finalPrice = totalProductPrice + shippingFee - discountAmount;
-        document.getElementById('final-price').textContent = '₩' + finalPrice.toLocaleString('ko-KR');
-        
-        const paymentBtnText = document.getElementById('payment-btn-text');
-        paymentBtnText.textContent = finalPrice.toLocaleString('ko-KR') + '원 결제하기';
+        document.getElementById("final-price").textContent =
+          "₩" + finalPrice.toLocaleString("ko-KR");
+
+        const paymentBtnText = document.getElementById("payment-btn-text");
+        paymentBtnText.textContent =
+          finalPrice.toLocaleString("ko-KR") + "원 결제하기";
       }
 
       // 결제 처리
       async function processPayment() {
-        const agreement = document.getElementById('agreement');
+        const agreement = document.getElementById("agreement");
         if (!agreement.checked) {
-          alert('주문 내용 확인 및 결제 동의에 체크해주세요.');
+          alert("주문 내용 확인 및 결제 동의에 체크해주세요.");
           return;
         }
 
-        const recipientName = document.getElementById('recipient-name').value;
-        const recipientPhone = document.getElementById('recipient-phone').value;
-        const deliveryAddress = document.getElementById('delivery-address').value;
-        
+        const recipientName = document.getElementById("recipient-name").value;
+        const recipientPhone = document.getElementById("recipient-phone").value;
+        const deliveryAddress =
+          document.getElementById("delivery-address").value;
+
         if (!recipientName || !recipientPhone || !deliveryAddress) {
-          alert('받는 분 정보와 배송지를 모두 입력해주세요.');
+          alert("받는 분 정보와 배송지를 모두 입력해주세요.");
           return;
         }
 
-        const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+        const paymentMethod = document.querySelector(
+          'input[name="paymentMethod"]:checked'
+        );
         if (!paymentMethod) {
-          alert('결제 방법을 선택해주세요.');
+          alert("결제 방법을 선택해주세요.");
           return;
         }
 
-        const deliveryMemo = document.getElementById('delivery-memo').value;
-        const deliveryMemoCustom = document.getElementById('delivery-memo-custom').value;
-        const finalDeliveryMemo = deliveryMemo === '직접 입력' ? deliveryMemoCustom : deliveryMemo;
+        const deliveryMemo = document.getElementById("delivery-memo").value;
+        const deliveryMemoCustom = document.getElementById(
+          "delivery-memo-custom"
+        ).value;
+        const finalDeliveryMemo =
+          deliveryMemo === "직접 입력" ? deliveryMemoCustom : deliveryMemo;
 
-        const paymentBtn = document.getElementById('payment-btn');
+        const paymentBtn = document.getElementById("payment-btn");
         paymentBtn.disabled = true;
-        paymentBtn.textContent = '결제 처리 중...';
+        paymentBtn.textContent = "결제 처리 중...";
 
         try {
           // Thymeleaf에서 주입된 cart 정보 사용
           const cartItems = /*[[${cart.items}]]*/ [];
-          const items = cartItems.map(function(item) {
+          const items = cartItems.map(function (item) {
             return {
               cardId: item.cardId,
-              quantity: item.quantity
+              quantity: item.quantity,
             };
           });
 
-          const response = await fetch('/api/orders/from-cart', {
-            method: 'POST',
+          const response = await fetch("/api/orders/from-cart", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+              "Content-Type": "application/json",
+              "X-CSRF-TOKEN":
+                document.querySelector('meta[name="_csrf"]').content,
             },
             body: JSON.stringify({
               items: items,
@@ -759,24 +936,30 @@
               recipientPhone: recipientPhone,
               deliveryAddress: deliveryAddress,
               deliveryMemo: finalDeliveryMemo,
-              paymentMethod: paymentMethod.value
-            })
+              paymentMethod: paymentMethod.value,
+            }),
           });
 
           const data = await response.json();
 
           if (response.ok) {
-            alert('주문이 완료되었습니다!\n\n주문 번호: ' + data.id + '\n총 금액: ₩' + data.totalPrice.toLocaleString('ko-KR'));
-            window.location.href = '/cards';
+            alert(
+              "주문이 완료되었습니다!\n\n주문 번호: " +
+                data.id +
+                "\n총 금액: ₩" +
+                data.totalPrice.toLocaleString("ko-KR")
+            );
+            window.location.href = "/cards";
           } else {
-            alert(data.message || '결제 처리에 실패했습니다.');
+            alert(data.message || "결제 처리에 실패했습니다.");
             paymentBtn.disabled = false;
-            paymentBtn.innerHTML = '<span id="payment-btn-text">결제하기</span>';
+            paymentBtn.innerHTML =
+              '<span id="payment-btn-text">결제하기</span>';
             calculateFinalPrice();
           }
         } catch (error) {
-          console.error('결제 오류:', error);
-          alert('결제 처리 중 오류가 발생했습니다.');
+          console.error("결제 오류:", error);
+          alert("결제 처리 중 오류가 발생했습니다.");
           paymentBtn.disabled = false;
           paymentBtn.innerHTML = '<span id="payment-btn-text">결제하기</span>';
           calculateFinalPrice();
@@ -784,10 +967,9 @@
       }
 
       // 페이지 로드 시 최종 결제 금액 계산
-      document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener("DOMContentLoaded", function () {
         calculateFinalPrice();
       });
     </script>
   </body>
 </html>
-

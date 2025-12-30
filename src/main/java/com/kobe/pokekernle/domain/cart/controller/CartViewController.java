@@ -29,10 +29,19 @@ public class CartViewController {
         }
 
         try {
-            User user = userRepository.findByEmail(principal.getName())
+            String email = principal.getName();
+            log.info("[CART VIEW] 장바구니 페이지 접근 - Email: {}", email);
+            
+            User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+            log.info("[CART VIEW] 사용자 찾음 - User ID: {}, Email: {}", user.getId(), user.getEmail());
+
             CartResponse cart = cartService.getCart(user.getId());
+            
+            log.info("[CART VIEW] 장바구니 조회 완료 - Items Count: {}, Total Price: {}", 
+                    cart.getItems().size(), cart.getTotalPrice());
+            
             model.addAttribute("cart", cart);
             model.addAttribute("user", user);
         } catch (IllegalArgumentException e) {
