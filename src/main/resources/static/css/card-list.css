@@ -24,30 +24,30 @@ header {
   body {
     padding: 10px;
   }
-  
+
   .card-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 15px;
     padding: 0 10px;
   }
-  
+
   .card-image {
     height: 200px;
   }
-  
+
   .card-info {
     padding: 12px;
   }
-  
+
   .card-info h3 {
     font-size: 1rem;
   }
-  
+
   header {
     margin-bottom: 20px;
     padding-top: 50px;
   }
-  
+
   header h1 {
     font-size: 1.5em;
   }
@@ -57,7 +57,7 @@ header {
   .card-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .card-image {
     height: 250px;
   }
@@ -107,7 +107,10 @@ header {
 }
 
 .set-name {
-  margin: 0 0 10px 0;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-right: 0px;
+  margin-left: 3px;
   font-size: 0.9em;
   color: #666;
 }
@@ -115,9 +118,17 @@ header {
 .meta {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end; /* bottom 정렬로 rarity와 usd-price의 bottom 일치 */
   gap: 12px; /* Rarity와 Price 사이 간격 추가 */
-  margin-top: 10px;
+  margin-top: 0;
+}
+
+.price-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px; /* won-price와 usd-price 사이 간격 */
+  justify-content: flex-end; /* 하단 정렬로 usd-price를 맨 아래로 */
 }
 
 .rarity {
@@ -129,15 +140,34 @@ header {
   font-weight: bold;
   white-space: nowrap; /* Rarity 텍스트 줄바꿈 방지 */
   flex-shrink: 0; /* 축소 방지 */
+  line-height: 1.5;
+  display: inline-block;
 }
 
-.price {
+.won-price {
+  font-weight: bold;
+  color: #4338ca;
+  white-space: nowrap; /* 가격 텍스트 줄바꿈 방지 */
+  text-align: right; /* 오른쪽 정렬 */
+  flex-shrink: 0; /* 축소 방지 */
+  min-width: fit-content; /* 내용에 맞는 최소 너비 */
+  font-size: 0.9em;
+  line-height: 1;
+  margin: 0;
+  display: block;
+}
+
+.usd-price {
   font-weight: bold;
   color: #d97706;
   white-space: nowrap; /* 가격 텍스트 줄바꿈 방지 */
   text-align: right; /* 오른쪽 정렬 */
   flex-shrink: 0; /* 축소 방지 */
   min-width: fit-content; /* 내용에 맞는 최소 너비 */
+  font-size: 0.9em;
+  line-height: 1.5;
+  margin: 0;
+  display: block;
 }
 
 .empty-state {

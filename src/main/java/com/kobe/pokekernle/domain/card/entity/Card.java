@@ -65,12 +65,8 @@ public class Card extends BaseTimeEntity {
     @Column(precision = 10, scale = 0)
     private Integer quantity; // 수량 (기본값: 1)
 
-    // 외부 API(예: TCGPlayer)와의 연동을 위한 ID
-    @Column(unique = true)
-    private String externalId;
-
     @Builder
-    public Card(String name, String setName, String number, Rarity rarity, CardCondition cardCondition, CollectionStatus collectionStatus, String imageUrl, String uploadedImageUrl, Long salePrice, Integer quantity, String externalId) {
+    public Card(String name, String setName, String number, Rarity rarity, CardCondition cardCondition, CollectionStatus collectionStatus, String imageUrl, String uploadedImageUrl, Long salePrice, Integer quantity) {
         this.name = name;
         this.setName = setName;
         this.number = number;
@@ -81,7 +77,6 @@ public class Card extends BaseTimeEntity {
         this.uploadedImageUrl = uploadedImageUrl;
         this.salePrice = salePrice;
         this.quantity = quantity != null ? quantity : 1; // 기본값 1
-        this.externalId = externalId;
     }
 
     /**

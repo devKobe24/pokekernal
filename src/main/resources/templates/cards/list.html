@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -22,7 +25,7 @@
           padding: 8px !important;
           gap: 4px !important;
           z-index: 9999;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         header > div:first-child button,
         header > div:first-child a {
@@ -70,7 +73,7 @@
         "
       >
         <!-- 로그인 상태에 따라 다른 버튼 표시 -->
-        <div th:if="${!isAuthenticated}" style="display: flex; gap: 8px;">
+        <div th:if="${!isAuthenticated}" style="display: flex; gap: 8px">
           <a
             href="/login"
             style="
@@ -88,7 +91,8 @@
             "
             onmouseover="this.style.backgroundColor='#3730a3';"
             onmouseout="this.style.backgroundColor='#4338ca';"
-          >로그인</a>
+            >로그인</a
+          >
           <a
             id="signup-btn"
             href="/register"
@@ -122,12 +126,19 @@
             >관리자 로그인</a
           >
         </div>
-        <div th:if="${isAuthenticated}" style="display: flex; gap: 8px; align-items: center;">
-          <span style="color: #666; font-size: 0.9em; margin-right: 8px;">
+        <div
+          th:if="${isAuthenticated}"
+          style="display: flex; gap: 8px; align-items: center"
+        >
+          <span style="color: #666; font-size: 0.9em; margin-right: 8px">
             <span th:text="${username}">사용자</span>님
           </span>
-          <form th:action="@{/admin/logout}" method="post" style="margin: 0;">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <form th:action="@{/admin/logout}" method="post" style="margin: 0">
+            <input
+              type="hidden"
+              th:name="${_csrf.parameterName}"
+              th:value="${_csrf.token}"
+            />
             <button
               type="submit"
               style="
@@ -141,7 +152,9 @@
                 transition: background-color 0.3s;
                 cursor: pointer;
               "
-            >로그아웃</button>
+            >
+              로그아웃
+            </button>
           </form>
           <a
             href="/cart"
@@ -201,7 +214,17 @@
             <p class="set-name" th:text="${card.setName}">Set Name</p>
             <div class="meta">
               <span class="rarity" th:text="${card.rarity}">Rarity</span>
-              <span class="price" th:text="${card.priceDisplay}">Price</span>
+              <div class="price-container">
+                <span
+                  class="won-price"
+                  th:if="${card.salePrice != null}"
+                  th:text="${'₩' + #numbers.formatInteger(card.salePrice, 0, 'COMMA')}"
+                  >₩50,000</span
+                >
+                <span class="usd-price" th:text="${card.priceDisplay}"
+                  >Price</span
+                >
+              </div>
             </div>
             <div
               class="status-info"
@@ -209,7 +232,7 @@
             >
               <div
                 th:if="${card.cardCondition != null}"
-                style="margin-top: 4px"
+                style="margin-top: 30px"
               >
                 <span style="font-weight: bold">카드 상태:</span>
                 <span
@@ -384,19 +407,55 @@
           ×
         </button>
 
-        <h2 style="margin: 0 0 20px 0; font-size: 1.5em; color: #333; padding-right: 30px;">
+        <h2
+          style="
+            margin: 0 0 20px 0;
+            font-size: 1.5em;
+            color: #333;
+            padding-right: 30px;
+          "
+        >
           📢 공지사항
         </h2>
 
-        <div id="notice-content" style="margin-bottom: 20px;">
-          <h3 id="notice-title" style="margin: 0 0 15px 0; font-size: 1.2em; color: #111827; font-weight: 600;"></h3>
-          <div id="notice-body" style="color: #374151; line-height: 1.6; white-space: pre-wrap;"></div>
+        <div id="notice-content" style="margin-bottom: 20px">
+          <h3
+            id="notice-title"
+            style="
+              margin: 0 0 15px 0;
+              font-size: 1.2em;
+              color: #111827;
+              font-weight: 600;
+            "
+          ></h3>
+          <div
+            id="notice-body"
+            style="color: #374151; line-height: 1.6; white-space: pre-wrap"
+          ></div>
         </div>
 
-        <div style="display: flex; gap: 10px; align-items: center; padding-top: 15px; border-top: 1px solid #e5e7eb;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; flex: 1;">
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+          "
+        >
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              cursor: pointer;
+              flex: 1;
+            "
+          >
             <input type="checkbox" id="notice-dont-show-today" />
-            <span style="font-size: 0.9em; color: #6b7280;">오늘 하루 보지 않기</span>
+            <span style="font-size: 0.9em; color: #6b7280"
+              >오늘 하루 보지 않기</span
+            >
           </label>
           <button
             type="button"
@@ -421,9 +480,21 @@
     </div>
 
     <!-- 공지사항 데이터를 hidden input으로 전달 -->
-    <input type="hidden" id="notice-data-id" th:value="${latestNotice != null ? latestNotice.id : ''}" />
-    <input type="hidden" id="notice-data-title" th:value="${latestNotice != null ? latestNotice.title : ''}" />
-    <input type="hidden" id="notice-data-content" th:value="${latestNotice != null ? latestNotice.content : ''}" />
+    <input
+      type="hidden"
+      id="notice-data-id"
+      th:value="${latestNotice != null ? latestNotice.id : ''}"
+    />
+    <input
+      type="hidden"
+      id="notice-data-title"
+      th:value="${latestNotice != null ? latestNotice.title : ''}"
+    />
+    <input
+      type="hidden"
+      id="notice-data-content"
+      th:value="${latestNotice != null ? latestNotice.content : ''}"
+    />
 
     <script>
       (function () {
@@ -441,7 +512,8 @@
           registerModal.style.display = "none";
         }
 
-        if (registerCancel) registerCancel.addEventListener("click", closeRegisterModal);
+        if (registerCancel)
+          registerCancel.addEventListener("click", closeRegisterModal);
 
         // If arrived with ?signup=1 open modal
         const params = new URLSearchParams(window.location.search);
@@ -462,8 +534,11 @@
             registerMsgBox.style.color = "";
 
             const fd = new FormData(registerForm);
-            const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+            const csrfToken =
+              document.querySelector('meta[name="_csrf"]').content;
+            const csrfHeader = document.querySelector(
+              'meta[name="_csrf_header"]'
+            ).content;
 
             try {
               const res = await fetch(registerForm.action, {
@@ -480,7 +555,8 @@
                   .json()
                   .catch(() => ({ message: "회원가입이 완료되었습니다." }));
                 registerMsgBox.style.color = "green";
-                registerMsgBox.textContent = body.message || "회원가입이 완료되었습니다.";
+                registerMsgBox.textContent =
+                  body.message || "회원가입이 완료되었습니다.";
                 // 회원가입 성공 후 카드 목록 페이지로 리다이렉션
                 setTimeout(() => {
                   window.location.href = "/cards";
@@ -490,7 +566,8 @@
                   .json()
                   .catch(() => ({ message: "가입에 실패했습니다." }));
                 registerMsgBox.style.color = "crimson";
-                registerMsgBox.textContent = body.message || "가입에 실패했습니다.";
+                registerMsgBox.textContent =
+                  body.message || "가입에 실패했습니다.";
               }
             } catch (err) {
               registerMsgBox.style.color = "crimson";
@@ -510,7 +587,9 @@
         const noticeClose = document.getElementById("notice-close");
         const noticeTitle = document.getElementById("notice-title");
         const noticeBody = document.getElementById("notice-body");
-        const noticeDontShowToday = document.getElementById("notice-dont-show-today");
+        const noticeDontShowToday = document.getElementById(
+          "notice-dont-show-today"
+        );
 
         function openNoticeModal() {
           if (noticeModal) {
@@ -521,12 +600,12 @@
         function closeNoticeModal() {
           if (noticeModal) {
             noticeModal.style.display = "none";
-            
+
             // 오늘 하루 보지 않기 체크 시 쿠키에 저장
             if (noticeDontShowToday && noticeDontShowToday.checked) {
-              const noticeDataIdEl = document.getElementById('notice-data-id');
+              const noticeDataIdEl = document.getElementById("notice-data-id");
               const noticeId = noticeDataIdEl ? noticeDataIdEl.value : null;
-              if (noticeId && noticeId.trim() !== '') {
+              if (noticeId && noticeId.trim() !== "") {
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
                 tomorrow.setHours(0, 0, 0, 0);
@@ -542,7 +621,7 @@
 
         // 모달 외부 클릭 시 닫기
         if (noticeModal) {
-          noticeModal.addEventListener("click", function(e) {
+          noticeModal.addEventListener("click", function (e) {
             if (e.target === noticeModal) {
               closeNoticeModal();
             }
@@ -550,63 +629,85 @@
         }
 
         // ESC 키로 모달 닫기
-        document.addEventListener("keydown", function(e) {
-          if (e.key === "Escape" && noticeModal && noticeModal.style.display === "flex") {
+        document.addEventListener("keydown", function (e) {
+          if (
+            e.key === "Escape" &&
+            noticeModal &&
+            noticeModal.style.display === "flex"
+          ) {
             closeNoticeModal();
           }
         });
 
         // 공지사항이 있으면 모달 표시
         // hidden input에서 데이터 읽기
-        const noticeDataIdEl = document.getElementById('notice-data-id');
-        const noticeDataTitleEl = document.getElementById('notice-data-title');
-        const noticeDataContentEl = document.getElementById('notice-data-content');
-        
+        const noticeDataIdEl = document.getElementById("notice-data-id");
+        const noticeDataTitleEl = document.getElementById("notice-data-title");
+        const noticeDataContentEl = document.getElementById(
+          "notice-data-content"
+        );
+
         const latestNoticeId = noticeDataIdEl ? noticeDataIdEl.value : null;
-        const latestNoticeTitle = noticeDataTitleEl ? noticeDataTitleEl.value : null;
-        const latestNoticeContent = noticeDataContentEl ? noticeDataContentEl.value : null;
-        
-        console.log('[DEBUG] 공지사항 데이터:', {
+        const latestNoticeTitle = noticeDataTitleEl
+          ? noticeDataTitleEl.value
+          : null;
+        const latestNoticeContent = noticeDataContentEl
+          ? noticeDataContentEl.value
+          : null;
+
+        console.log("[DEBUG] 공지사항 데이터:", {
           id: latestNoticeId,
           title: latestNoticeTitle,
           hasContent: !!latestNoticeContent && latestNoticeContent.length > 0,
           noticeTitleEl: noticeTitle,
-          noticeBodyEl: noticeBody
+          noticeBodyEl: noticeBody,
         });
-        
-        if (latestNoticeId && latestNoticeId.trim() !== '' && latestNoticeTitle && latestNoticeTitle.trim() !== '' && noticeTitle && noticeBody) {
+
+        if (
+          latestNoticeId &&
+          latestNoticeId.trim() !== "" &&
+          latestNoticeTitle &&
+          latestNoticeTitle.trim() !== "" &&
+          noticeTitle &&
+          noticeBody
+        ) {
           // 쿠키에서 오늘 하루 보지 않기 체크
           const cookieName = `notice_${latestNoticeId}_hidden`;
-          const cookies = document.cookie.split(';');
+          const cookies = document.cookie.split(";");
           let shouldHide = false;
-          
+
           for (let cookie of cookies) {
-            const [name, value] = cookie.trim().split('=');
-            if (name === cookieName && value === 'true') {
+            const [name, value] = cookie.trim().split("=");
+            if (name === cookieName && value === "true") {
               shouldHide = true;
-              console.log('[DEBUG] 공지사항이 쿠키에 의해 숨겨짐:', cookieName);
+              console.log("[DEBUG] 공지사항이 쿠키에 의해 숨겨짐:", cookieName);
               break;
             }
           }
 
           if (!shouldHide) {
             noticeTitle.textContent = latestNoticeTitle;
-            noticeBody.textContent = latestNoticeContent || '';
-            console.log('[DEBUG] 공지사항 모달 표시 시도');
+            noticeBody.textContent = latestNoticeContent || "";
+            console.log("[DEBUG] 공지사항 모달 표시 시도");
             // 약간의 지연을 주어 DOM이 완전히 렌더링된 후 모달 표시
-            setTimeout(function() {
+            setTimeout(function () {
               openNoticeModal();
             }, 100);
           } else {
-            console.log('[DEBUG] 공지사항 모달 표시하지 않음 (쿠키로 인해 숨김)');
+            console.log(
+              "[DEBUG] 공지사항 모달 표시하지 않음 (쿠키로 인해 숨김)"
+            );
           }
         } else {
-          console.log('[DEBUG] 공지사항 데이터가 없거나 DOM 요소를 찾을 수 없음', {
-            hasId: !!latestNoticeId && latestNoticeId.trim() !== '',
-            hasTitle: !!latestNoticeTitle && latestNoticeTitle.trim() !== '',
-            hasTitleEl: !!noticeTitle,
-            hasBodyEl: !!noticeBody
-          });
+          console.log(
+            "[DEBUG] 공지사항 데이터가 없거나 DOM 요소를 찾을 수 없음",
+            {
+              hasId: !!latestNoticeId && latestNoticeId.trim() !== "",
+              hasTitle: !!latestNoticeTitle && latestNoticeTitle.trim() !== "",
+              hasTitleEl: !!noticeTitle,
+              hasBodyEl: !!noticeBody,
+            }
+          );
         }
 
         // 전역 함수로 등록

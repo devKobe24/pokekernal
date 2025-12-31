@@ -17,6 +17,5 @@ import java.util.Optional;
  * 2025. 12. 21.        kobe       최초 생성
  */
 public interface CardRepository extends JpaRepository<Card, Long> {
-    // 외부 ID(예: xy1-1)로 카드를 찾아보기 위함
-    Optional<Card> findByExternalId(String externalId);
+    Optional<Card> findBySetName(String setName);
 }

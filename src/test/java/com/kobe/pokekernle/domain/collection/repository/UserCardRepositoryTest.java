@@ -63,7 +63,6 @@ class UserCardRepositoryTest {
                 .number("6/165")
                 .rarity(Rarity.RARE)
                 .imageUrl("https://github.com/devKobe24/images2/blob/main/charizard.jpeg?raw=true")
-                .externalId("base1-4")
                 .build();
         cardRepository.save(card);
 

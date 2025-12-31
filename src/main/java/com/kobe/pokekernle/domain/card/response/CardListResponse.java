@@ -28,7 +28,8 @@ public record CardListResponse(
         String collectionStatus,     // 컬렉션 상태 (enum name)
         String collectionStatusDesc, // 컬렉션 상태 설명
         String imageUrl,
-        String priceDisplay // 화면에 보여줄 가격 문자열 (예: "$ 12.50")
+        String priceDisplay, // 화면에 보여줄 가격 문자열 (예: "$ 12.50")
+        Long salePrice // 희망 판매 가격 (원화, KRW)
 ) {
     public static CardListResponse from(Card card, MarketPrice marketPrice, CurrencyConverterService currencyConverter) {
         String priceStr = "가격 정보 없음";
@@ -56,7 +57,8 @@ public record CardListResponse(
                 card.getCollectionStatus() != null ? card.getCollectionStatus().name() : null, // 컬렉션 상태
                 card.getCollectionStatus() != null ? card.getCollectionStatus().getDescription() : null, // 컬렉션 상태 설명
                 card.getDisplayImageUrl() != null ? card.getDisplayImageUrl() : "/images/pokemon-card.png", // 업로드된 이미지 우선 사용
-                priceStr
+                priceStr,
+                card.getSalePrice() // 희망 판매 가격 (원화)
         );
     }
 }
