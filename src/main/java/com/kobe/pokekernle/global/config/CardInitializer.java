@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ import java.time.LocalDate;
  */
 @Slf4j
 @Component
+@Profile("dev") // dev 프로필에서만 실행 (프로덕션 환경에서는 실행되지 않음)
 @RequiredArgsConstructor
 public class CardInitializer implements CommandLineRunner {
 
