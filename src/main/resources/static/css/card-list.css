@@ -144,6 +144,75 @@ header {
   display: inline-block;
 }
 
+.collection-status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75em;
+  font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.5;
+  display: inline-block;
+}
+
+/* 컬렉션 상태별 색상 */
+.collection-status-owned {
+  background-color: #e0e7ff;
+  color: #4338ca;
+}
+
+.collection-status-wishlist {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.collection-status-trade {
+  background-color: #fed7aa;
+  color: #ea580c;
+}
+
+.collection-status-sale {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.collection-status-traded,
+.collection-status-sold {
+  background-color: #e5e7eb;
+  color: #6b7280;
+}
+
+.card-condition {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75em;
+  font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.5;
+  display: inline-block;
+}
+
+/* 카드 상태별 색상 */
+.card-condition-mint,
+.card-condition-near-mint {
+  background-color: #81D8CF;
+  color: #ffffff;
+}
+
+.card-condition-excellent {
+  background-color: #fed7aa;
+  color: #ea580c;
+}
+
+.card-condition-lightly-played,
+.card-condition-played,
+.card-condition-heavily-played,
+.card-condition-damaged {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
 .won-price {
   font-weight: bold;
   color: #4338ca;

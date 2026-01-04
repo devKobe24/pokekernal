@@ -277,33 +277,33 @@
           </div>
         </div>
         <div class="header-buttons">
-          <!-- 로그인 상태에 따라 다른 버튼 표시 -->
+        <!-- 로그인 상태에 따라 다른 버튼 표시 -->
           <div th:if="${!isAuthenticated}" style="display: flex; gap: 8px; align-items: center;">
             <a href="/login" class="btn-login">로그인</a>
-            <a
-              id="signup-btn"
-              href="/register"
-              onclick="event.stopPropagation(); window.location.href='/register';"
+          <a
+            id="signup-btn"
+            href="/register"
+            onclick="event.stopPropagation(); window.location.href='/register';"
               class="btn-signup"
               >회원가입</a
-            >
-            <a href="/admin/login" class="btn-admin">관리자 로그인</a>
-          </div>
-          <div
-            th:if="${isAuthenticated}"
-            style="display: flex; gap: 8px; align-items: center"
           >
+            <a href="/admin/login" class="btn-admin">관리자 로그인</a>
+        </div>
+        <div
+          th:if="${isAuthenticated}"
+          style="display: flex; gap: 8px; align-items: center"
+        >
             <span class="user-info">
-              <span th:text="${username}">사용자</span>님
-            </span>
-            <form th:action="@{/admin/logout}" method="post" style="margin: 0">
-              <input
-                type="hidden"
-                th:name="${_csrf.parameterName}"
-                th:value="${_csrf.token}"
-              />
+            <span th:text="${username}">사용자</span>님
+          </span>
+          <form th:action="@{/admin/logout}" method="post" style="margin: 0">
+            <input
+              type="hidden"
+              th:name="${_csrf.parameterName}"
+              th:value="${_csrf.token}"
+            />
               <button type="submit" class="btn-logout">로그아웃</button>
-            </form>
+          </form>
             <a href="/cart" class="btn-cart">장바구니</a>
             <a href="/admin/cards/register" class="btn-cart">Admin</a>
           </div>
@@ -313,9 +313,9 @@
 
     <!-- 메인 헤더 (제목 영역) -->
     <header class="main-header">
-      <h1 th:utext="${cardCategory != null ? cardCategory : 'ALL PRODUCTS'}">ALL PRODUCTS</h1>
-      <div class="stats">
-        <span>Total Cards: <b th:text="${cards.size()}">0</b></span>
+      <h1 th:utext="${category != null ? category : 'ALL PRODUCTS'}">ALL PRODUCTS</h1>
+        <div class="stats">
+          <span>Total Cards: <b th:text="${cards.size()}">0</b></span>
       </div>
     </header>
 
@@ -356,10 +356,16 @@
             >
               <div
                 th:if="${card.cardCondition != null}"
-                style="margin-top: 30px"
+                style="margin-top: 8px"
               >
-                <span style="font-weight: bold">카드 상태:</span>
-                <span
+                <span class="card-condition"
+                  th:classappend="${card.cardCondition == 'MINT'} ? 'card-condition-mint' : 
+                                  (${card.cardCondition == 'NEAR_MINT'} ? 'card-condition-near-mint' : 
+                                  (${card.cardCondition == 'EXCELLENT'} ? 'card-condition-excellent' : 
+                                  (${card.cardCondition == 'LIGHTLY_PLAYED'} ? 'card-condition-lightly-played' : 
+                                  (${card.cardCondition == 'PLAYED'} ? 'card-condition-played' : 
+                                  (${card.cardCondition == 'HEAVILY_PLAYED'} ? 'card-condition-heavily-played' : 
+                                  (${card.cardCondition == 'DAMAGED'} ? 'card-condition-damaged' : ''))))))"
                   th:text="${card.cardConditionDesc != null ? card.cardConditionDesc : card.cardCondition}"
                   >-</span
                 >
@@ -368,8 +374,13 @@
                 th:if="${card.collectionStatus != null}"
                 style="margin-top: 4px"
               >
-                <span style="font-weight: bold">컬렉션 상태:</span>
-                <span
+                <span class="collection-status"
+                  th:classappend="${card.collectionStatus == 'OWNED'} ? 'collection-status-owned' : 
+                                  (${card.collectionStatus == 'WHISHLIST'} ? 'collection-status-wishlist' : 
+                                  (${card.collectionStatus == 'FOR_TRADE'} ? 'collection-status-trade' : 
+                                  (${card.collectionStatus == 'FOR_SALE'} ? 'collection-status-sale' : 
+                                  (${card.collectionStatus == 'TRADED'} ? 'collection-status-traded' : 
+                                  (${card.collectionStatus == 'SOLD'} ? 'collection-status-sold' : '')))))"
                   th:text="${card.collectionStatusDesc != null ? card.collectionStatusDesc : card.collectionStatus}"
                   >-</span
                 >
