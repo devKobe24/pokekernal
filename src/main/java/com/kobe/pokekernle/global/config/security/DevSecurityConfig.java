@@ -76,6 +76,7 @@ public class DevSecurityConfig {
                         // 5. 관리자 페이지는 ADMIN 권한 필요
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/cards/**").permitAll() // 카드 목록 페이지 허용
+                        .requestMatchers("/shop/**").permitAll() // SHOP 카테고리 페이지 허용
                         .requestMatchers("/collection/**").permitAll()
                         .requestMatchers("/").permitAll()
                         .anyRequest().authenticated()

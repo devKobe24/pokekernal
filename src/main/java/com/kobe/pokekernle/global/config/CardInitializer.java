@@ -1,9 +1,6 @@
 package com.kobe.pokekernle.global.config;
 
-import com.kobe.pokekernle.domain.card.entity.Card;
-import com.kobe.pokekernle.domain.card.entity.MarketPrice;
-import com.kobe.pokekernle.domain.card.entity.PriceHistory;
-import com.kobe.pokekernle.domain.card.entity.Rarity;
+import com.kobe.pokekernle.domain.card.entity.*;
 import com.kobe.pokekernle.domain.card.repository.CardRepository;
 import com.kobe.pokekernle.domain.card.repository.MarketPriceRepository;
 import com.kobe.pokekernle.domain.card.repository.PriceHistoryRepository;
@@ -98,6 +95,7 @@ public class CardInitializer implements CommandLineRunner {
                 .uploadedImageUrl(uploadedImageUrl)
                 .salePrice(salePrice)
                 .quantity(quantity)
+                .cardCategory(CardCategory.POKEMON_SINGLE)
                 .build();
 
         cardRepository.save(card);

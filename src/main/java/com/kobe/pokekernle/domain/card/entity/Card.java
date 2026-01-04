@@ -65,8 +65,12 @@ public class Card extends BaseTimeEntity {
     @Column(precision = 10, scale = 0)
     private Integer quantity; // 수량 (기본값: 1)
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "card_category", length = 50)
+    private CardCategory cardCategory;
+
     @Builder
-    public Card(String name, String setName, String number, Rarity rarity, CardCondition cardCondition, CollectionStatus collectionStatus, String imageUrl, String uploadedImageUrl, Long salePrice, Integer quantity) {
+    public Card(String name, String setName, String number, Rarity rarity, CardCondition cardCondition, CollectionStatus collectionStatus, String imageUrl, String uploadedImageUrl, Long salePrice, Integer quantity, CardCategory cardCategory) {
         this.name = name;
         this.setName = setName;
         this.number = number;
@@ -77,6 +81,7 @@ public class Card extends BaseTimeEntity {
         this.uploadedImageUrl = uploadedImageUrl;
         this.salePrice = salePrice;
         this.quantity = quantity != null ? quantity : 1; // 기본값 1
+        this.cardCategory = cardCategory;
     }
 
     /**
@@ -112,7 +117,7 @@ public class Card extends BaseTimeEntity {
      * 카드 정보 수정
      */
     public void updateCard(String name, String setName, String number, Rarity rarity, CardCondition cardCondition, CollectionStatus collectionStatus,
-                          String imageUrl, String uploadedImageUrl, Long salePrice, Integer quantity) {
+                          String imageUrl, String uploadedImageUrl, Long salePrice, Integer quantity, CardCategory cardCategory) {
         if (name != null && !name.isBlank()) {
             this.name = name;
         }
@@ -142,6 +147,9 @@ public class Card extends BaseTimeEntity {
         }
         if (quantity != null) {
             this.quantity = quantity;
+        }
+        if (cardCategory != null) {
+            this.cardCategory = cardCategory;
         }
     }
 

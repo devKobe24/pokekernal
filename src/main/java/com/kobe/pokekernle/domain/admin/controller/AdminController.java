@@ -2,6 +2,7 @@ package com.kobe.pokekernle.domain.admin.controller;
 
 import com.kobe.pokekernle.domain.admin.service.ImageUploadService;
 import com.kobe.pokekernle.domain.card.entity.Card;
+import com.kobe.pokekernle.domain.card.entity.CardCategory;
 import com.kobe.pokekernle.domain.card.entity.MarketPrice;
 import com.kobe.pokekernle.domain.card.entity.PriceHistory;
 import com.kobe.pokekernle.domain.card.entity.Rarity;
@@ -89,6 +90,7 @@ public class AdminController {
             @RequestParam(required = false) String salePrice,
             @RequestParam(required = false) String quantity,
             @RequestParam(required = false) String currentPriceUsd,
+            @RequestParam(required = false) String category,
             RedirectAttributes redirectAttributes
     ) {
         // 이미지 업로드 처리
@@ -165,6 +167,18 @@ public class AdminController {
                 }
             }
 
+            // CardCategory 파싱
+            CardCategory cardCategoryEnum = null;
+            if (category != null && !category.isBlank()) {
+                try {
+                    // String을 Enum으로 변환 (예: "pokemon-single" -> POKEMON_SINGLE)
+                    String categoryUpper = category.trim().toUpperCase().replace("-", "_");
+                    cardCategoryEnum = CardCategory.valueOf(categoryUpper);
+                } catch (IllegalArgumentException e) {
+                    log.warn("[ADMIN] CardCategory 파싱 실패: {}", category);
+                }
+            }
+
             // 카드 생성
             Card card = Card.builder()
                     .name(name.trim())
@@ -177,6 +191,7 @@ public class AdminController {
                     .uploadedImageUrl(uploadedImageUrl)
                     .salePrice(salePriceLong)
                     .quantity(quantityInt)
+                    .cardCategory(cardCategoryEnum)
                     .build();
 
             cardRepository.save(card);
@@ -268,6 +283,7 @@ public class AdminController {
             @RequestParam(required = false) String salePrice,
             @RequestParam(required = false) String quantity,
             @RequestParam(required = false) String currentPriceUsd,
+            @RequestParam(required = false) String category,
             RedirectAttributes redirectAttributes
     ) {
         Card card = cardRepository.findById(id)
@@ -340,6 +356,18 @@ public class AdminController {
             }
         }
 
+        // CardCategory 파싱
+        CardCategory cardCategoryEnum = null;
+        if (category != null && !category.isBlank()) {
+            try {
+                // String을 Enum으로 변환 (예: "pokemon-single" -> POKEMON_SINGLE)
+                String categoryUpper = category.trim().toUpperCase().replace("-", "_");
+                cardCategoryEnum = CardCategory.valueOf(categoryUpper);
+            } catch (IllegalArgumentException e) {
+                log.warn("[ADMIN] CardCategory 파싱 실패: {}", category);
+            }
+        }
+
         // 카드 정보 업데이트
         card.updateCard(
                 name,
@@ -351,7 +379,8 @@ public class AdminController {
                 imageUrl,
                 uploadedImageUrl != null ? uploadedImageUrl : card.getUploadedImageUrl(),
                 salePriceLong,
-                quantityInt
+                quantityInt,
+                cardCategoryEnum != null ? cardCategoryEnum : card.getCardCategory()
         );
 
         cardRepository.save(card);

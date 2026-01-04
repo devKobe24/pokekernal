@@ -61,10 +61,13 @@ public class ProdSecurityConfig {
                         // 4. 카드 목록 및 상세 페이지 허용
                         .requestMatchers("/cards/**").permitAll()
 
-                        // 5. 컬렉션 페이지 허용
+                        // 5. SHOP 카테고리 페이지 허용
+                        .requestMatchers("/shop/**").permitAll()
+
+                        // 6. 컬렉션 페이지 허용
                         .requestMatchers("/collection/**").permitAll()
 
-                        // 6. 업로드된 이미지 접근 허용
+                        // 7. 업로드된 이미지 접근 허용
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
 
