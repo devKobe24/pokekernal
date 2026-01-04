@@ -142,6 +142,15 @@
         transform: translateY(0);
       }
       
+      /* 모바일에서는 hover 비활성화 */
+      @media (max-width: 768px) {
+        .shop-menu:hover .shop-dropdown {
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-10px);
+        }
+      }
+      
       .shop-dropdown-item {
         display: block;
         padding: 12px 20px;
@@ -199,16 +208,26 @@
         
         .shop-menu {
           width: 100%;
+          position: relative;
         }
         
         .shop-dropdown {
-          position: static;
-          opacity: 1;
-          visibility: visible;
-          transform: none;
-          box-shadow: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-10px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           border: 1px solid #e5e7eb;
           margin-top: 4px;
+        }
+        
+        .shop-menu.active .shop-dropdown {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
         }
         
         .header-buttons {
@@ -633,6 +652,39 @@
 
     <script>
       (function () {
+        // SHOP 드롭다운 모바일 토글
+        const shopMenu = document.querySelector('.shop-menu');
+        const shopMenuTrigger = document.querySelector('.shop-menu-trigger');
+        
+        if (shopMenuTrigger && shopMenu) {
+          // 모바일에서만 클릭 이벤트 추가
+          const isMobile = window.matchMedia('(max-width: 768px)').matches;
+          
+          if (isMobile || window.matchMedia('(max-width: 768px)').matches) {
+            shopMenuTrigger.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              shopMenu.classList.toggle('active');
+            });
+            
+            // 드롭다운 외부 클릭 시 닫기
+            document.addEventListener('click', function(e) {
+              if (!shopMenu.contains(e.target)) {
+                shopMenu.classList.remove('active');
+              }
+            });
+            
+            // 미디어 쿼리 변경 감지
+            const mediaQuery = window.matchMedia('(max-width: 768px)');
+            mediaQuery.addEventListener('change', function(e) {
+              if (!e.matches) {
+                // 데스크톱으로 변경되면 active 클래스 제거
+                shopMenu.classList.remove('active');
+              }
+            });
+          }
+        }
+        
         // Registration Modal
         const registerModal = document.getElementById("register-modal");
         const registerCancel = document.getElementById("register-cancel");
