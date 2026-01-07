@@ -11,8 +11,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
+import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,15 +44,20 @@ public class ShopController {
     @GetMapping("/pokemon-single")
     public String pokemonSingle(Model model, 
                                 Principal principal,
-                                Authentication authentication) {
+                                Authentication authentication,
+                                @RequestParam(value = "sortBy", defaultValue = "default") String sortBy) {
         List<CardListResponse> allCards = cardService.getAllCards();
         // 포켓몬 싱글 카드 필터링 (카테고리로 필터링)
         List<CardListResponse> cards = allCards.stream()
                 .filter(card -> card.category() != null && CardCategory.POKEMON_SINGLE.name().equals(card.category()))
                 .collect(Collectors.toList());
         
+        // 정렬 적용
+        cards = sortCards(cards, sortBy);
+        
         model.addAttribute("cards", cards);
         model.addAttribute("category", "포켓몬 싱글 카드<br>[Pokemon Single Card]");
+        model.addAttribute("sortBy", sortBy);
         addNoticeAttributes(model);
         addAuthAttributes(model, authentication);
         return "cards/list";
@@ -140,6 +148,45 @@ public class ShopController {
         if (authentication != null && authentication.isAuthenticated()) {
             model.addAttribute("username", authentication.getName());
         }
+    }
+
+    /**
+     * 카드 목록 정렬 헬퍼 메서드
+     */
+    private List<CardListResponse> sortCards(List<CardListResponse> cards, String sortBy) {
+        return switch (sortBy) {
+            case "price-asc" -> cards.stream()
+                    .sorted(Comparator.comparing(
+                            card -> card.salePrice() != null ? card.salePrice() : Long.MAX_VALUE,
+                            Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
+            case "price-desc" -> cards.stream()
+                    .sorted(Comparator.comparing(
+                            (CardListResponse card) -> card.salePrice() != null ? card.salePrice() : 0L,
+                            Comparator.nullsLast(Comparator.reverseOrder())))
+                    .collect(Collectors.toList());
+            case "date-asc" -> cards.stream()
+                    .sorted(Comparator.comparing(
+                            CardListResponse::createdAt,
+                            Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
+            case "date-desc" -> cards.stream()
+                    .sorted(Comparator.comparing(
+                            CardListResponse::createdAt,
+                            Comparator.nullsLast(Comparator.reverseOrder())))
+                    .collect(Collectors.toList());
+            case "price-change-asc" -> cards.stream()
+                    .sorted(Comparator.comparing(
+                            card -> card.priceChange() != null ? card.priceChange() : BigDecimal.ZERO,
+                            Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
+            case "price-change-desc" -> cards.stream()
+                    .sorted(Comparator.comparing(
+                            card -> card.priceChange() != null ? card.priceChange() : BigDecimal.ZERO,
+                            Comparator.nullsLast(Comparator.reverseOrder())))
+                    .collect(Collectors.toList());
+            default -> cards; // 기본 정렬 (변경 없음)
+        };
     }
 }
 

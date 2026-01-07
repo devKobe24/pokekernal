@@ -337,7 +337,7 @@
           />
           <input
             type="hidden"
-            name="cardCategory"
+            name="category"
             value="pokemon-single"
           />
           <div class="form-group">
@@ -776,14 +776,14 @@
               selectedForm.classList.add('active');
             }
             
-            // 해당 폼의 cardCategory hidden input 업데이트
+            // 해당 폼의 category hidden input 업데이트
             const formElement = selectedForm.querySelector('form');
             if (formElement) {
-              let categoryInput = formElement.querySelector('input[name="cardCategory"]');
+              let categoryInput = formElement.querySelector('input[name="category"]');
               if (!categoryInput) {
                 categoryInput = document.createElement('input');
                 categoryInput.type = 'hidden';
-                categoryInput.name = 'cardCategory';
+                categoryInput.name = 'category';
                 formElement.insertBefore(categoryInput, formElement.firstChild);
               }
               categoryInput.value = cardCategory;

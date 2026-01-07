@@ -175,6 +175,45 @@
         border-bottom-right-radius: 8px;
       }
       
+      /* 정렬 컨테이너 스타일 */
+      .sort-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 20px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .sort-label {
+        font-size: 0.95em;
+        color: #666;
+        font-weight: 500;
+      }
+
+      .sort-select {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: white;
+        font-size: 0.95em;
+        color: #333;
+        cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        min-width: 200px;
+      }
+
+      .sort-select:hover {
+        border-color: #4338ca;
+      }
+
+      .sort-select:focus {
+        outline: none;
+        border-color: #4338ca;
+        box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
+      }
+      
       /* 메인 헤더 (제목 영역) */
       .main-header {
         margin-top: 70px;
@@ -228,6 +267,18 @@
           opacity: 1;
           visibility: visible;
           transform: translateY(0);
+        }
+        
+        .sort-container {
+          padding: 0 10px;
+          justify-content: center;
+          margin: 15px auto;
+        }
+        
+        .sort-select {
+          font-size: 0.9em;
+          padding: 6px 10px;
+          min-width: 180px;
         }
         
         .header-buttons {
@@ -337,6 +388,20 @@
           <span>Total Cards: <b th:text="${cards.size()}">0</b></span>
       </div>
     </header>
+
+    <!-- 정렬 옵션 (SHOP 페이지에서만 표시) -->
+    <div class="sort-container" th:if="${category != null}">
+      <label for="sortSelect" class="sort-label">Sort By:</label>
+      <select id="sortSelect" class="sort-select" onchange="handleSortChange(this.value)">
+        <option value="default" th:selected="${sortBy == null || sortBy == 'default'}">기본순</option>
+        <option value="price-asc" th:selected="${sortBy == 'price-asc'}">가격: 낮은 순</option>
+        <option value="price-desc" th:selected="${sortBy == 'price-desc'}">가격: 높은 순</option>
+        <option value="date-asc" th:selected="${sortBy == 'date-asc'}">추가된 날짜: 오래된 순</option>
+        <option value="date-desc" th:selected="${sortBy == 'date-desc'}">추가된 날짜: 최신 순</option>
+        <option value="price-change-asc" th:selected="${sortBy == 'price-change-asc'}">시세 변동: 낮은 순</option>
+        <option value="price-change-desc" th:selected="${sortBy == 'price-change-desc'}">시세 변동: 높은 순</option>
+      </select>
+    </div>
 
     <main>
       <div class="card-grid">
@@ -652,6 +717,13 @@
 
     <script>
       (function () {
+        // 정렬 변경 핸들러
+        window.handleSortChange = function(sortBy) {
+          const currentUrl = new URL(window.location.href);
+          currentUrl.searchParams.set('sortBy', sortBy);
+          window.location.href = currentUrl.toString();
+        };
+        
         // SHOP 드롭다운 모바일 토글
         const shopMenu = document.querySelector('.shop-menu');
         const shopMenuTrigger = document.querySelector('.shop-menu-trigger');

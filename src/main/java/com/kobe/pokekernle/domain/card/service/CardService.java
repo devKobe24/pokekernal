@@ -61,14 +61,25 @@ public class CardService {
         // 여기서는 간단하게 모든 시세를 가져와 메모리에서 매핑합니다.
         List<MarketPrice> prices = marketPriceRepository.findAll();
 
-        // 카드 ID를 키로 하는 시세 앱 생성
+        // 카드 ID를 키로 하는 시세 맵 생성
         Map<Long, MarketPrice> priceMap = prices.stream()
                 .filter(mp -> mp.getCard() != null)
                 .collect(Collectors.toMap(mp -> mp.getCard().getId(), Function.identity(), (p1, p2) -> p1));
 
-        // 3. DTO 변환 (USD로 변환하여 표시)
+        // 3. 시세 히스토리 조회 (시세 변동 계산용)
+        // 성능 최적화: 모든 카드의 히스토리를 한 번에 조회
+        List<PriceHistory> allHistories = priceHistoryRepository.findAll();
+        Map<Long, List<PriceHistory>> historyMap = allHistories.stream()
+                .filter(h -> h.getCard() != null)
+                .collect(Collectors.groupingBy(h -> h.getCard().getId()));
+
+        // 4. DTO 변환 (USD로 변환하여 표시, 시세 변동 포함)
         return cards.stream()
-                .map(card -> CardListResponse.from(card, priceMap.get(card.getId()), currencyConverterService))
+                .map(card -> CardListResponse.from(
+                        card, 
+                        priceMap.get(card.getId()), 
+                        historyMap.get(card.getId()),
+                        currencyConverterService))
                 .collect(Collectors.toList());
     }
 }
