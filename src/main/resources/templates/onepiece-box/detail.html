@@ -427,7 +427,10 @@
         return window.location.origin + '/' + url;
       }
 
-      // 텍스처 로드 함수
+      // textures 변수 선언
+      let textures = [];
+
+      // 텍스처 로드 함수 (CORS 우회를 위해 crossOrigin 설정)
       function loadTexture(url, index) {
         return new Promise((resolve, reject) => {
           const absoluteUrl = toAbsoluteUrl(url);
@@ -439,8 +442,10 @@
             console.log(`텍스처 ${index} 기본 텍스처 사용`);
             resolve(defaultTexture);
           } else {
-            // 텍스처 로드
+            // 텍스처 로드 (CORS 우회를 위해 crossOrigin 설정)
             const textureLoader = new THREE.TextureLoader();
+            // CORS 문제 해결을 위해 crossOrigin 설정
+            textureLoader.crossOrigin = 'anonymous';
             textureLoader.load(
               absoluteUrl,
               (texture) => {
