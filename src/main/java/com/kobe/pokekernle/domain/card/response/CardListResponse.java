@@ -97,10 +97,8 @@ public record CardListResponse(
     public static CardListResponse fromOnePieceBox(
             com.kobe.pokekernle.domain.onepiece.box.entity.OnePieceBox box,
             com.kobe.pokekernle.domain.onepiece.box.entity.OnePieceBoxMarketPrice marketPrice) {
-        String priceStr = "가격 정보 없음";
-        if (marketPrice != null && marketPrice.getPrice() != null) {
-            priceStr = "₩ " + marketPrice.getPrice();
-        }
+        // OnePieceBox는 priceDisplay를 사용하지 않음 (null로 설정)
+        String priceStr = null;
 
         // 앞면 이미지를 대표 이미지로 사용
         String imageUrl = box.getFrontImageUrl();
@@ -118,7 +116,7 @@ public record CardListResponse(
                 box.getCollectionStatus() != null ? box.getCollectionStatus().name() : null,
                 box.getCollectionStatus() != null ? box.getCollectionStatus().getDescription() : null,
                 imageUrl,
-                priceStr,
+                priceStr, // OnePieceBox는 USD 가격 표시 안 함
                 box.getSalePrice(),
                 box.getCardCategory() != null ? box.getCardCategory().name() : null,
                 box.getCreatedAt(),

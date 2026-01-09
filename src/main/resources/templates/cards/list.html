@@ -325,6 +325,15 @@
           font-size: 1.5em;
         }
       }
+      
+      /* OnePieceBox 전용 스타일 */
+      .meta-box {
+        justify-content: flex-end; /* rarity가 없으므로 오른쪽 정렬 */
+      }
+      
+      .price-container-box {
+        align-items: flex-end; /* 가격을 오른쪽 정렬 */
+      }
     </style>
   </head>
   <body>
@@ -422,18 +431,24 @@
           <div class="card-info">
             <h3 th:text="${card.name}">Card Name</h3>
             <p class="set-name" th:text="${card.setName}">Set Name</p>
-            <div class="meta">
-              <span class="rarity" th:text="${card.rarity}">Rarity</span>
-              <div class="price-container">
+            <div class="meta" th:classappend="${card.category == 'ONEPIECE_BOX'} ? 'meta-box' : ''">
+              <!-- rarity는 ONEPIECE_BOX가 아닐 때만 표시 -->
+              <span 
+                class="rarity" 
+                th:if="${card.category != 'ONEPIECE_BOX' and card.rarity != null}"
+                th:text="${card.rarity}">Rarity</span>
+              <div class="price-container" th:classappend="${card.category == 'ONEPIECE_BOX'} ? 'price-container-box' : ''">
                 <span
                   class="won-price"
                   th:if="${card.salePrice != null}"
                   th:text="${'₩' + #numbers.formatInteger(card.salePrice, 0, 'COMMA')}"
                   >₩50,000</span
                 >
-                <span class="usd-price" th:text="${card.priceDisplay}"
-                  >Price</span
-                >
+                <!-- usd-price는 ONEPIECE_BOX가 아닐 때만 표시 -->
+                <span 
+                  class="usd-price" 
+                  th:if="${card.category != 'ONEPIECE_BOX' and card.priceDisplay != null}"
+                  th:text="${card.priceDisplay}">Price</span>
               </div>
             </div>
             <div
