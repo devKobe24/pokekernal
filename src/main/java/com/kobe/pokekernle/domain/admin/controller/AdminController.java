@@ -14,6 +14,10 @@ import com.kobe.pokekernle.domain.card.repository.PriceHistoryRepository;
 import com.kobe.pokekernle.domain.card.response.CardListResponse;
 import com.kobe.pokekernle.domain.card.service.CardService;
 import com.kobe.pokekernle.domain.collection.repository.UserCardRepository;
+import com.kobe.pokekernle.domain.onepiece.box.entity.OnePieceBox;
+import com.kobe.pokekernle.domain.onepiece.box.entity.OnePieceBoxMarketPrice;
+import com.kobe.pokekernle.domain.onepiece.box.repository.OnePieceBoxRepository;
+import com.kobe.pokekernle.domain.onepiece.box.repository.OnePieceBoxMarketPriceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +54,8 @@ public class AdminController {
     private final MarketPriceRepository marketPriceRepository;
     private final PriceHistoryRepository priceHistoryRepository;
     private final UserCardRepository userCardRepository;
+    private final OnePieceBoxRepository onePieceBoxRepository;
+    private final OnePieceBoxMarketPriceRepository onePieceBoxMarketPriceRepository;
 
     // 1. 카드 등록 페이지 보여주기
     @GetMapping("/cards/register")
@@ -244,6 +250,144 @@ public class AdminController {
         } catch (Exception e) {
             log.error("[ADMIN] 카드 등록 실패", e);
             redirectAttributes.addFlashAttribute("error", "카드 등록 중 오류 발생: " + e.getMessage());
+        }
+
+        return "redirect:/admin/cards/register";
+    }
+
+    // 4. 원피스 박스 등록
+    @PostMapping("/onepiece-boxes/register")
+    @Transactional
+    public String registerOnePieceBox(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String setName,
+            @RequestParam(required = false) String boxCondition,
+            @RequestParam(required = false) String collectionStatus,
+            @RequestParam(required = false) MultipartFile frontImageFile,
+            @RequestParam(required = false) MultipartFile backImageFile,
+            @RequestParam(required = false) MultipartFile leftImageFile,
+            @RequestParam(required = false) MultipartFile rightImageFile,
+            @RequestParam(required = false) MultipartFile topImageFile,
+            @RequestParam(required = false) MultipartFile bottomImageFile,
+            @RequestParam(required = false) String salePrice,
+            @RequestParam(required = false) String quantity,
+            RedirectAttributes redirectAttributes
+    ) {
+        // 6면 이미지 업로드 처리
+        String frontImageUrl = null;
+        String backImageUrl = null;
+        String leftImageUrl = null;
+        String rightImageUrl = null;
+        String topImageUrl = null;
+        String bottomImageUrl = null;
+
+        try {
+            if (frontImageFile != null && !frontImageFile.isEmpty()) {
+                frontImageUrl = imageUploadService.uploadImage(frontImageFile);
+                log.info("[ADMIN] 앞면 이미지 업로드 완료: {}", frontImageUrl);
+            }
+            if (backImageFile != null && !backImageFile.isEmpty()) {
+                backImageUrl = imageUploadService.uploadImage(backImageFile);
+                log.info("[ADMIN] 뒷면 이미지 업로드 완료: {}", backImageUrl);
+            }
+            if (leftImageFile != null && !leftImageFile.isEmpty()) {
+                leftImageUrl = imageUploadService.uploadImage(leftImageFile);
+                log.info("[ADMIN] 왼쪽면 이미지 업로드 완료: {}", leftImageUrl);
+            }
+            if (rightImageFile != null && !rightImageFile.isEmpty()) {
+                rightImageUrl = imageUploadService.uploadImage(rightImageFile);
+                log.info("[ADMIN] 오른쪽면 이미지 업로드 완료: {}", rightImageUrl);
+            }
+            if (topImageFile != null && !topImageFile.isEmpty()) {
+                topImageUrl = imageUploadService.uploadImage(topImageFile);
+                log.info("[ADMIN] 윗면 이미지 업로드 완료: {}", topImageUrl);
+            }
+            if (bottomImageFile != null && !bottomImageFile.isEmpty()) {
+                bottomImageUrl = imageUploadService.uploadImage(bottomImageFile);
+                log.info("[ADMIN] 아랫면 이미지 업로드 완료: {}", bottomImageUrl);
+            }
+        } catch (Exception e) {
+            log.error("[ADMIN] 이미지 업로드 실패", e);
+            redirectAttributes.addFlashAttribute("error", "이미지 업로드 실패: " + e.getMessage());
+            return "redirect:/admin/cards/register";
+        }
+
+        // 필수 정보 검증
+        if (name == null || name.isBlank()) {
+            redirectAttributes.addFlashAttribute("error", "박스 이름은 필수입니다.");
+            return "redirect:/admin/cards/register";
+        }
+
+        try {
+            // 판매 가격 파싱 (원화)
+            Long salePriceLong = null;
+            if (salePrice != null && !salePrice.isBlank()) {
+                try {
+                    salePriceLong = Long.parseLong(salePrice.trim());
+                } catch (NumberFormatException e) {
+                    log.warn("[ADMIN] 판매 가격 파싱 실패: {}", salePrice);
+                }
+            }
+
+            // 수량 파싱
+            Integer quantityInt = null;
+            if (quantity != null && !quantity.isBlank()) {
+                try {
+                    quantityInt = Integer.parseInt(quantity.trim());
+                    if (quantityInt < 1) {
+                        log.warn("[ADMIN] 수량은 1 이상이어야 합니다: {}", quantity);
+                        quantityInt = 1;
+                    }
+                } catch (NumberFormatException e) {
+                    log.warn("[ADMIN] 수량 파싱 실패: {}", quantity);
+                }
+            }
+
+            // CardCondition 파싱
+            CardCondition conditionEnum = null;
+            if (boxCondition != null && !boxCondition.isBlank()) {
+                try {
+                    conditionEnum = CardCondition.valueOf(boxCondition.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    log.warn("[ADMIN] BoxCondition 파싱 실패: {}", boxCondition);
+                }
+            }
+
+            // CollectionStatus 파싱
+            CollectionStatus collectionStatusEnum = null;
+            if (collectionStatus != null && !collectionStatus.isBlank()) {
+                try {
+                    collectionStatusEnum = CollectionStatus.valueOf(collectionStatus.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    log.warn("[ADMIN] CollectionStatus 파싱 실패: {}", collectionStatus);
+                }
+            }
+
+            // 원피스 박스 생성
+            OnePieceBox box = OnePieceBox.builder()
+                    .name(name.trim())
+                    .setName(setName != null && !setName.isBlank() ? setName.trim() : "Unknown Set")
+                    .condition(conditionEnum)
+                    .collectionStatus(collectionStatusEnum)
+                    .frontImageUrl(frontImageUrl)
+                    .backImageUrl(backImageUrl)
+                    .leftImageUrl(leftImageUrl)
+                    .rightImageUrl(rightImageUrl)
+                    .topImageUrl(topImageUrl)
+                    .bottomImageUrl(bottomImageUrl)
+                    .salePrice(salePriceLong)
+                    .quantity(quantityInt)
+                    .cardCategory(CardCategory.ONEPIECE_BOX)
+                    .build();
+
+            onePieceBoxRepository.save(box);
+            log.info("[ADMIN] 원피스 박스 등록 완료 - Box ID: {}", box.getId());
+
+            String successMessage = "원피스 박스가 등록되었습니다!";
+            redirectAttributes.addFlashAttribute("message", successMessage);
+        } catch (Exception e) {
+            log.error("[ADMIN] 원피스 박스 등록 실패", e);
+            redirectAttributes.addFlashAttribute("error", "원피스 박스 등록 중 오류 발생: " + e.getMessage());
         }
 
         return "redirect:/admin/cards/register";

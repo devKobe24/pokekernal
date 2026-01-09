@@ -92,4 +92,37 @@ public record CardListResponse(
                 priceChange // 시세 변동률
         );
     }
+
+    // OnePieceBox를 CardListResponse로 변환
+    public static CardListResponse fromOnePieceBox(
+            com.kobe.pokekernle.domain.onepiece.box.entity.OnePieceBox box,
+            com.kobe.pokekernle.domain.onepiece.box.entity.OnePieceBoxMarketPrice marketPrice) {
+        String priceStr = "가격 정보 없음";
+        if (marketPrice != null && marketPrice.getPrice() != null) {
+            priceStr = "₩ " + marketPrice.getPrice();
+        }
+
+        // 앞면 이미지를 대표 이미지로 사용
+        String imageUrl = box.getFrontImageUrl();
+        if (imageUrl == null || imageUrl.isBlank()) {
+            imageUrl = "/images/pokemon-card.png";
+        }
+
+        return new CardListResponse(
+                box.getId(),
+                box.getName() != null ? box.getName() : "Unknown",
+                box.getSetName() != null ? box.getSetName() : "Unknown Set",
+                null, // rarity는 박스에 없음
+                box.getCondition() != null ? box.getCondition().name() : null,
+                box.getCondition() != null ? box.getCondition().getDescription() : null,
+                box.getCollectionStatus() != null ? box.getCollectionStatus().name() : null,
+                box.getCollectionStatus() != null ? box.getCollectionStatus().getDescription() : null,
+                imageUrl,
+                priceStr,
+                box.getSalePrice(),
+                box.getCardCategory() != null ? box.getCardCategory().name() : null,
+                box.getCreatedAt(),
+                BigDecimal.ZERO // 시세 변동률은 박스에 없음
+        );
+    }
 }

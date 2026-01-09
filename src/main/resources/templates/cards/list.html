@@ -408,7 +408,9 @@
         <div
           class="card-item"
           th:each="card : ${cards}"
-          th:onclick="|location.href='@{/cards/{id}(id=${card.id})}'|"
+          th:data-card-id="${card.id}"
+          th:data-card-category="${card.category}"
+          onclick="handleCardClick(this)"
         >
           <div class="card-image">
             <img
@@ -972,6 +974,22 @@
         // 전역 함수로 등록
         window.closeNoticeModal = closeNoticeModal;
       })();
+
+      // 카드 클릭 핸들러 - 카테고리에 따라 다른 상세 페이지로 이동
+      function handleCardClick(element) {
+        const cardId = element.getAttribute('data-card-id');
+        const category = element.getAttribute('data-card-category');
+        
+        if (!cardId) return;
+        
+        // 원피스 Box인 경우 별도 상세 페이지로 이동
+        if (category === 'ONEPIECE_BOX') {
+          window.location.href = '/onepiece-boxes/' + cardId;
+        } else {
+          // 일반 카드인 경우 카드 상세 페이지로 이동
+          window.location.href = '/cards/' + cardId;
+        }
+      }
     </script>
   </body>
 </html>

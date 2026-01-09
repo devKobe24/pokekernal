@@ -8,10 +8,15 @@ import com.kobe.pokekernle.domain.card.repository.CardRepository;
 import com.kobe.pokekernle.domain.card.repository.MarketPriceRepository;
 import com.kobe.pokekernle.domain.card.repository.PriceHistoryRepository;
 import com.kobe.pokekernle.domain.card.response.CardListResponse;
+import com.kobe.pokekernle.domain.onepiece.box.entity.OnePieceBox;
+import com.kobe.pokekernle.domain.onepiece.box.entity.OnePieceBoxMarketPrice;
+import com.kobe.pokekernle.domain.onepiece.box.repository.OnePieceBoxRepository;
+import com.kobe.pokekernle.domain.onepiece.box.repository.OnePieceBoxMarketPriceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -37,6 +42,8 @@ public class CardService {
     private final MarketPriceRepository marketPriceRepository;
     private final PriceHistoryRepository priceHistoryRepository;
     private final CurrencyConverterService currencyConverterService;
+    private final OnePieceBoxRepository onePieceBoxRepository;
+    private final OnePieceBoxMarketPriceRepository onePieceBoxMarketPriceRepository;
 
     public CardDetailResponse getCardDetail(Long cardId) {
         // 1. 카드 조회 (없으면 404 예외)
@@ -54,6 +61,8 @@ public class CardService {
     }
 
     public List<CardListResponse> getAllCards() {
+        List<CardListResponse> result = new ArrayList<>();
+
         // 1. 모든 카드 조회 (실무에선 페이징 필수, 지금은 MVP라 전체 조회)
         List<Card> cards = cardRepository.findAll();
 
@@ -73,13 +82,28 @@ public class CardService {
                 .filter(h -> h.getCard() != null)
                 .collect(Collectors.groupingBy(h -> h.getCard().getId()));
 
-        // 4. DTO 변환 (USD로 변환하여 표시, 시세 변동 포함)
-        return cards.stream()
+        // 4. 카드 DTO 변환 (USD로 변환하여 표시, 시세 변동 포함)
+        List<CardListResponse> cardResponses = cards.stream()
                 .map(card -> CardListResponse.from(
                         card, 
                         priceMap.get(card.getId()), 
                         historyMap.get(card.getId()),
                         currencyConverterService))
                 .collect(Collectors.toList());
+        result.addAll(cardResponses);
+
+        // 5. 원피스 박스 조회 및 변환
+        List<OnePieceBox> boxes = onePieceBoxRepository.findAll();
+        List<OnePieceBoxMarketPrice> boxPrices = onePieceBoxMarketPriceRepository.findAll();
+        Map<Long, OnePieceBoxMarketPrice> boxPriceMap = boxPrices.stream()
+                .filter(mp -> mp.getOnePieceBox() != null)
+                .collect(Collectors.toMap(mp -> mp.getOnePieceBox().getId(), Function.identity(), (p1, p2) -> p1));
+
+        List<CardListResponse> boxResponses = boxes.stream()
+                .map(box -> CardListResponse.fromOnePieceBox(box, boxPriceMap.get(box.getId())))
+                .collect(Collectors.toList());
+        result.addAll(boxResponses);
+
+        return result;
     }
 }

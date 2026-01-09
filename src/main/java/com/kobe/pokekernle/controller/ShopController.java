@@ -104,16 +104,24 @@ public class ShopController {
     }
 
     /**
-     * 원피스 카드 목록
+     * 원피스 카드 목록 (원피스 Box 포함)
      */
     @GetMapping("/onepiece")
     public String onePiece(Model model, 
                           Principal principal,
                           Authentication authentication) {
         List<CardListResponse> allCards = cardService.getAllCards();
-        // 원피스 카드 필터링
+        // 원피스 카드 및 원피스 Box 필터링
         List<CardListResponse> cards = allCards.stream()
-                .filter(card -> card.name() != null && card.name().contains("원피스"))
+                .filter(card -> {
+                    // 카테고리로 필터링 (ONEPIECE_BOX 또는 이름에 "원피스" 포함)
+                    if (card.category() != null) {
+                        return card.category().equals("ONEPIECE_BOX") || 
+                               card.category().equals("ONEPIECE_SINGLE") ||
+                               (card.name() != null && card.name().contains("원피스"));
+                    }
+                    return card.name() != null && card.name().contains("원피스");
+                })
                 .collect(Collectors.toList());
         
         model.addAttribute("cards", cards);
