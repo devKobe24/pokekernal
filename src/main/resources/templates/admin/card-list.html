@@ -129,7 +129,21 @@
                  class="btn-edit" 
                  style="padding: 6px 12px; background: #4338ca; color: white; text-decoration: none; border-radius: 5px; font-size: 0.85em;"
                  onclick="event.stopPropagation();">수정</a>
-              <form th:action="@{${card.category == 'ONEPIECE_BOX' ? '/admin/onepiece-boxes/delete/' : '/admin/cards/delete/'}{id}(id=${card.id})}" 
+              <form th:if="${card.category == 'ONEPIECE_BOX'}" 
+                    th:action="@{/admin/onepiece-boxes/delete/{id}(id=${card.id})}" 
+                    method="post" 
+                    style="display: inline;"
+                    onsubmit="return confirm('정말 삭제하시겠습니까?');"
+                    onclick="event.stopPropagation();">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" 
+                        class="btn-delete" 
+                        style="padding: 6px 12px; background: #dc2626; color: white; border: none; border-radius: 5px; font-size: 0.85em; cursor: pointer;">
+                  삭제
+                </button>
+              </form>
+              <form th:if="${card.category != 'ONEPIECE_BOX'}" 
+                    th:action="@{/admin/cards/delete/{id}(id=${card.id})}" 
                     method="post" 
                     style="display: inline;"
                     onsubmit="return confirm('정말 삭제하시겠습니까?');"
