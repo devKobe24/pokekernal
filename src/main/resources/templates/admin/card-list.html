@@ -110,13 +110,15 @@
           class="card-item"
           th:each="card : ${cards}"
           th:data-card-id="${card.id}"
-          th:data-card-category="${card.category}"
+          th:data-card-category="${card.category != null ? card.category : ''}"
+          onclick="handleAdminCardClick(this)"
+          style="cursor: pointer;"
         >
-          <div class="card-image" th:onclick="|handleAdminCardClick(${card.id}, '${card.category != null ? card.category : ''}')|" style="cursor: pointer;">
+          <div class="card-image" onclick="event.stopPropagation(); handleAdminCardClick(this.closest('.card-item'))">
             <img th:src="${card.imageUrl}" th:alt="${card.name}" />
           </div>
           <div class="card-info">
-            <h3 th:text="${card.name}" th:onclick="|handleAdminCardClick(${card.id}, '${card.category != null ? card.category : ''}')|" style="cursor: pointer;">Card Name</h3>
+            <h3 th:text="${card.name}" onclick="event.stopPropagation(); handleAdminCardClick(this.closest('.card-item'))" style="cursor: pointer;">Card Name</h3>
             <p class="set-name" th:text="${card.setName}">Set Name</p>
             <div class="meta">
               <span class="rarity" th:text="${card.rarity}">Rarity</span>
@@ -152,7 +154,10 @@
     <script src="/js/app.bundle.js"></script>
     <script>
       // 관리자 카드 목록 페이지에서 카드 클릭 핸들러
-      function handleAdminCardClick(cardId, category) {
+      function handleAdminCardClick(element) {
+        const cardId = element.getAttribute('data-card-id');
+        const category = element.getAttribute('data-card-category');
+        
         if (!cardId) return;
         
         // 원피스 Box인 경우 별도 상세 페이지로 이동
