@@ -610,4 +610,31 @@ public class AdminController {
 
         return "redirect:/admin/cards/list";
     }
+
+    // 8. 원피스 Box 삭제 처리
+    @PostMapping("/onepiece-boxes/delete/{id}")
+    @Transactional
+    public String deleteOnePieceBox(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            OnePieceBox box = onePieceBoxRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 원피스 Box입니다. ID=" + id));
+
+            // 연관된 데이터 먼저 삭제 (외래키 제약조건 해결)
+            // 1. OnePieceBoxMarketPrice 삭제
+            onePieceBoxMarketPriceRepository.findByOnePieceBox(box)
+                    .ifPresent(onePieceBoxMarketPriceRepository::delete);
+            log.info("[ADMIN] OnePieceBoxMarketPrice 삭제 완료 - Box ID: {}", id);
+
+            // 2. OnePieceBox 삭제
+            onePieceBoxRepository.delete(box);
+            log.info("[ADMIN] 원피스 Box 삭제 완료 - Box ID: {}", id);
+
+            redirectAttributes.addFlashAttribute("message", "원피스 Box가 삭제되었습니다.");
+        } catch (Exception e) {
+            log.error("[ADMIN] 원피스 Box 삭제 실패 - Box ID: {}", id, e);
+            redirectAttributes.addFlashAttribute("error", "원피스 Box 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+
+        return "redirect:/admin/cards/list";
+    }
 }

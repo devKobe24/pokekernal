@@ -340,6 +340,9 @@
         bottom: /*[[${box.bottomImageUrl != null ? box.bottomImageUrl : ''}]]*/ ''
       };
 
+      // 디버깅: 이미지 URL 확인
+      console.log('Box Images:', boxImages);
+
       // 1. Scene Setup
       const scene = new THREE.Scene();
       scene.background = null;
@@ -409,58 +412,68 @@
         boxImages.back || ''
       ];
 
-      // 텍스처 로드 매니저
-      const manager = new THREE.LoadingManager();
-      const textureLoader = new THREE.TextureLoader(manager);
-
-      let textures = [];
-      let loadedCount = 0;
-
-      manager.onLoad = function() {
-        loadingDiv.style.display = 'none';
-        createBox();
-      };
-
-      manager.onProgress = function(url, itemsLoaded, itemsTotal) {
-        if (itemsTotal > 0) {
-          loadingDiv.textContent = `이미지 로딩 중... (${itemsLoaded}/${itemsTotal})`;
+      // 상대 경로를 절대 경로로 변환하는 함수
+      function toAbsoluteUrl(url) {
+        if (!url || url.trim() === '') return '';
+        // 이미 절대 URL이면 그대로 반환
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          return url;
         }
-      };
+        // 상대 경로인 경우 현재 도메인 추가
+        if (url.startsWith('/')) {
+          return window.location.origin + url;
+        }
+        // 상대 경로 (예: uploads/images/xxx.jpg)
+        return window.location.origin + '/' + url;
+      }
 
-      manager.onError = function(url) {
-        console.error('텍스처 로드 실패:', url);
-      };
-
-      // 텍스처 로드
-      textureUrls.forEach((url, index) => {
-        if (!url || url.trim() === '') {
-          textures[index] = createDefaultTexture();
-          loadedCount++;
-          if (loadedCount >= textureUrls.length) {
-            setTimeout(() => manager.onLoad(), 50);
+      // 텍스처 로드 함수
+      function loadTexture(url, index) {
+        return new Promise((resolve, reject) => {
+          const absoluteUrl = toAbsoluteUrl(url);
+          console.log(`텍스처 ${index} 로드 시작:`, absoluteUrl || '(기본 텍스처)');
+          
+          if (!absoluteUrl || absoluteUrl.trim() === '') {
+            // 기본 텍스처 사용
+            const defaultTexture = createDefaultTexture();
+            console.log(`텍스처 ${index} 기본 텍스처 사용`);
+            resolve(defaultTexture);
+          } else {
+            // 텍스처 로드
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.load(
+              absoluteUrl,
+              (texture) => {
+                texture.colorSpace = THREE.SRGBColorSpace;
+                console.log(`텍스처 ${index} 로드 성공:`, absoluteUrl);
+                resolve(texture);
+              },
+              undefined,
+              (err) => {
+                console.error(`텍스처 ${index} 로드 오류:`, absoluteUrl, err);
+                const defaultTexture = createDefaultTexture();
+                resolve(defaultTexture); // 에러 시 기본 텍스처 사용
+              }
+            );
           }
-        } else {
-          textures[index] = textureLoader.load(
-            url,
-            (texture) => {
-              texture.colorSpace = THREE.SRGBColorSpace;
-              loadedCount++;
-              if (loadedCount >= textureUrls.length) {
-                manager.onLoad();
-              }
-            },
-            undefined,
-            (err) => {
-              console.error('텍스처 로드 오류:', url, err);
-              textures[index] = createDefaultTexture();
-              loadedCount++;
-              if (loadedCount >= textureUrls.length) {
-                manager.onLoad();
-              }
-            }
-          );
-        }
-      });
+        });
+      }
+
+      // 모든 텍스처 로드
+      Promise.all(textureUrls.map((url, index) => loadTexture(url, index)))
+        .then((loadedTextures) => {
+          textures = loadedTextures;
+          console.log('모든 텍스처 로드 완료:', textures);
+          loadingDiv.style.display = 'none';
+          createBox();
+        })
+        .catch((err) => {
+          console.error('텍스처 로드 중 오류 발생:', err);
+          // 에러 발생 시 기본 텍스처로 채우기
+          textures = textureUrls.map(() => createDefaultTexture());
+          loadingDiv.style.display = 'none';
+          createBox();
+        });
 
       function createBox() {
         const boxWidth = 0.9;
