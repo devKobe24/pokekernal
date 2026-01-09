@@ -61,17 +61,20 @@ public class ProdSecurityConfig {
                         // 4. 카드 목록 및 상세 페이지 허용
                         .requestMatchers("/cards/**").permitAll()
 
-                        // 5. SHOP 카테고리 페이지 허용
+                        // 5. 원피스 Box 상세 페이지 허용
+                        .requestMatchers("/onepiece-boxes/**").permitAll()
+
+                        // 6. SHOP 카테고리 페이지 허용
                         .requestMatchers("/shop/**").permitAll()
 
-                        // 6. 컬렉션 페이지 허용
+                        // 7. 컬렉션 페이지 허용
                         .requestMatchers("/collection/**").permitAll()
 
-                        // 7. 업로드된 이미지 접근 허용
+                        // 8. 업로드된 이미지 접근 허용
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
 
-                        // 8. SEO 파일 허용
+                        // 9. SEO 파일 허용
                         .requestMatchers("/sitemap.xml", "/robots.txt").permitAll()
 
                         // API 경로는 인증된 사용자만 접근 가능
@@ -84,10 +87,10 @@ public class ProdSecurityConfig {
                         // 장바구니 및 주문서 페이지는 인증된 사용자만 접근 가능
                         .requestMatchers("/cart").authenticated()
                         .requestMatchers("/checkout").authenticated()
-                        // 9. 관리자 페이지는 ADMIN 권한만 접근 가능
+                        // 10. 관리자 페이지는 ADMIN 권한만 접근 가능
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        // 8. 그 외 모든 요청은 인증 필요
+                        // 11. 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
                 // 운영 환경에서는 폼 로그인 기능을 활성화
