@@ -81,19 +81,59 @@
         /* 수량 선택기 모바일 대응 */
         #quantity-decrease,
         #quantity-increase {
-          width: 36px !important;
-          height: 36px !important;
-          font-size: 16px !important;
+          min-width: 44px !important; /* 터치 친화적 크기 */
+          min-height: 44px !important;
+          width: 44px !important;
+          height: 44px !important;
+          font-size: 18px !important;
         }
         
         #quantity-input {
-          width: 50px !important;
-          height: 36px !important;
-          font-size: 14px !important;
+          min-width: 60px !important;
+          min-height: 44px !important;
+          width: 60px !important;
+          height: 44px !important;
+          font-size: 16px !important; /* iOS 자동 줌 방지 */
+          text-align: center;
         }
         
         #total-price {
-          font-size: 1.2em !important;
+          font-size: 1.3em !important;
+        }
+        
+        .back-btn {
+          width: 100%;
+          min-height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        button[type="submit"] {
+          min-height: 50px;
+          font-size: 18px;
+          padding: 15px 20px;
+          width: 100%;
+        }
+      }
+      
+      /* 작은 스마트폰 대응 */
+      @media (max-width: 480px) {
+        body {
+          padding: 8px;
+        }
+        
+        .detail-container {
+          padding: 15px;
+          margin: 15px auto;
+        }
+        
+        .detail-info h1 {
+          font-size: 1.2em;
+        }
+        
+        .chart-container {
+          height: 200px;
         }
       }
 

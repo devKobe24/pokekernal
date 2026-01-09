@@ -18,31 +18,114 @@
         align-items: center;
       }
       
-      /* 모바일 대응 */
+      /* 모바일 대응 - 태블릿 */
+      @media (max-width: 1024px) {
+        .admin-header {
+          padding: 15px;
+        }
+        
+        .stats-bar {
+          padding: 0 15px;
+        }
+      }
+      
+      /* 모바일 대응 - 스마트폰 */
       @media (max-width: 768px) {
+        body {
+          padding: 10px;
+          font-size: 15px;
+        }
+        
         .admin-header {
           flex-direction: column;
           gap: 15px;
-          align-items: flex-start;
+          align-items: stretch;
+          padding: 15px;
         }
+        
         .admin-header h1 {
-          font-size: 1.3em;
+          font-size: 1.2em;
+          text-align: center;
         }
+        
         .admin-actions {
           flex-direction: column;
           width: 100%;
+          gap: 10px;
         }
+        
         .admin-btn {
           width: 100%;
           text-align: center;
+          min-height: 44px;
+          padding: 12px 20px;
+          font-size: 16px; /* iOS 자동 줌 방지 */
         }
+        
         .stats-bar {
           flex-direction: column;
           gap: 10px;
           align-items: flex-start !important;
+          padding: 0 10px;
+          margin-bottom: 20px;
         }
+        
+        .stats-info {
+          font-size: 0.95em;
+        }
+        
+        /* 카드 그리드 모바일 최적화 */
+        .card-grid {
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 12px;
+          padding: 0 10px;
+        }
+        
+        .card-info h3 {
+          font-size: 0.9em;
+        }
+        
+        /* 관리자 액션 버튼 모바일 최적화 */
+        .admin-actions {
+          gap: 8px;
+        }
+        
+        .admin-actions .btn-edit,
+        .admin-actions .btn-delete {
+          min-height: 44px;
+          padding: 10px 16px;
+          font-size: 14px;
+        }
+      }
+      
+      /* 모바일 대응 - 작은 스마트폰 */
+      @media (max-width: 480px) {
         body {
-          padding: 10px;
+          padding: 8px;
+          font-size: 14px;
+        }
+        
+        .admin-header {
+          padding: 12px;
+        }
+        
+        .admin-header h1 {
+          font-size: 1.1em;
+        }
+        
+        .admin-btn {
+          font-size: 15px;
+          padding: 10px 16px;
+        }
+        
+        .stats-info {
+          font-size: 0.9em;
+        }
+        
+        .card-grid {
+          grid-template-columns: 1fr;
+          gap: 10px;
+          padding: 0 8px;
         }
       }
       .admin-header h1 {

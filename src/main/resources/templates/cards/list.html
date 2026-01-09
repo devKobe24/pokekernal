@@ -50,6 +50,8 @@
         cursor: pointer;
         font-size: 14px;
         display: inline-block;
+        min-height: 44px; /* 터치 친화적 버튼 크기 */
+        box-sizing: border-box;
       }
       
       .btn-login {
@@ -227,27 +229,55 @@
         gap: 30px;
       }
       
-      /* 모바일 대응 스타일 */
+      /* 모바일 대응 스타일 - 태블릿 */
+      @media (max-width: 1024px) {
+        .header-content {
+          flex-wrap: wrap;
+        }
+        
+        .header-buttons {
+          flex-wrap: wrap;
+        }
+      }
+      
+      /* 모바일 대응 스타일 - 스마트폰 */
       @media (max-width: 768px) {
         .top-header {
-          padding: 8px 10px;
+          padding: 10px;
         }
         
         .header-content {
           flex-direction: column;
-          gap: 8px;
+          gap: 12px;
+          align-items: stretch;
         }
         
         .header-left {
           width: 100%;
-          justify-content: center;
-          flex-wrap: wrap;
-          gap: 10px;
+          justify-content: space-between;
+          flex-wrap: nowrap;
+          gap: 15px;
+          align-items: center;
+        }
+        
+        .header-left > a {
+          font-size: 1.1em !important;
+          white-space: nowrap;
         }
         
         .shop-menu {
-          width: 100%;
+          flex: 1;
           position: relative;
+        }
+        
+        .shop-menu-trigger {
+          width: 100%;
+          text-align: center;
+          padding: 10px 12px !important;
+          min-height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         
         .shop-dropdown {
@@ -273,26 +303,41 @@
           padding: 0 10px;
           justify-content: center;
           margin: 15px auto;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        
+        .sort-label {
+          font-size: 0.9em;
         }
         
         .sort-select {
-          font-size: 0.9em;
-          padding: 6px 10px;
+          font-size: 16px; /* iOS 자동 줌 방지 */
+          padding: 10px 12px;
           min-width: 180px;
+          min-height: 44px;
+          width: 100%;
+          max-width: 100%;
         }
         
         .header-buttons {
           width: 100%;
-          justify-content: center;
-          flex-wrap: wrap;
-          gap: 4px;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
         }
         
         .header-buttons a,
         .header-buttons button {
-          padding: 8px 10px;
-          font-size: 0.8em;
+          padding: 12px 10px;
+          font-size: 0.85em;
           white-space: nowrap;
+          min-height: 44px;
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
         }
         
         .user-info {
@@ -300,7 +345,12 @@
         }
         
         .main-header {
-          margin-top: 100px;
+          margin-top: 120px;
+          padding: 15px 10px;
+        }
+        
+        .main-header h1 {
+          font-size: 1.3em;
         }
         
         .card-grid {
@@ -312,17 +362,56 @@
           max-width: 95% !important;
           padding: 20px !important;
         }
+        
+        /* 모바일에서 모달 내부 입력 필드 최적화 */
+        #register-modal input {
+          font-size: 16px; /* iOS 자동 줌 방지 */
+        }
       }
       
+      /* 모바일 대응 스타일 - 작은 스마트폰 */
       @media (max-width: 480px) {
+        .top-header {
+          padding: 8px;
+        }
+        
+        .header-left {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 10px;
+        }
+        
+        .header-left > a {
+          text-align: center;
+          font-size: 1em !important;
+        }
+        
+        .header-buttons {
+          grid-template-columns: 1fr;
+          gap: 6px;
+        }
+        
         .header-buttons a,
         .header-buttons button {
-          padding: 6px 8px;
-          font-size: 0.75em;
+          padding: 10px 8px;
+          font-size: 0.8em;
+        }
+        
+        .main-header {
+          margin-top: 140px;
+          padding: 10px 8px;
         }
         
         .main-header h1 {
-          font-size: 1.5em;
+          font-size: 1.2em;
+        }
+        
+        .sort-container {
+          padding: 0 8px;
+        }
+        
+        .sort-select {
+          min-width: 100%;
         }
       }
       

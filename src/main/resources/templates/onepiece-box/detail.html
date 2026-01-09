@@ -110,8 +110,26 @@
         background-color: #3730a3;
       }
 
-      /* 모바일 대응 */
+      /* 모바일 대응 - 태블릿 */
+      @media (max-width: 1024px) {
+        .detail-container {
+          gap: 30px;
+          padding: 25px;
+        }
+        
+        .scene-container {
+          width: 100%;
+          max-width: 500px;
+          height: 450px;
+        }
+      }
+      
+      /* 모바일 대응 - 스마트폰 */
       @media (max-width: 768px) {
+        body {
+          padding: 10px;
+        }
+        
         .detail-container {
           flex-direction: column;
           gap: 20px;
@@ -121,8 +139,56 @@
 
         .scene-container {
           width: 100%;
-          max-width: 360px;
-          height: 400px;
+          max-width: 100%;
+          height: 350px;
+        }
+        
+        .detail-info h1 {
+          font-size: 1.3em;
+        }
+        
+        .detail-info h2 {
+          font-size: 1.1em;
+        }
+        
+        .back-btn {
+          width: 100%;
+          text-align: center;
+          min-height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .btn {
+          min-height: 44px;
+          padding: 12px 20px;
+          font-size: 16px; /* iOS 자동 줌 방지 */
+          width: 100%;
+        }
+      }
+      
+      /* 모바일 대응 - 작은 스마트폰 */
+      @media (max-width: 480px) {
+        body {
+          padding: 8px;
+        }
+        
+        .detail-container {
+          padding: 15px;
+          margin: 15px auto;
+        }
+        
+        .scene-container {
+          height: 300px;
+        }
+        
+        .detail-info h1 {
+          font-size: 1.1em;
+        }
+        
+        .detail-info h2 {
+          font-size: 1em;
         }
       }
 

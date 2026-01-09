@@ -46,37 +46,107 @@
         background: #eee;
       }
       
-      /* 모바일 대응 */
+      /* 모바일 대응 - 태블릿 */
+      @media (max-width: 1024px) {
+        .table-container {
+          margin: 30px auto;
+        }
+        
+        table {
+          font-size: 0.95em;
+        }
+      }
+      
+      /* 모바일 대응 - 스마트폰 */
       @media (max-width: 768px) {
         body {
           padding: 10px;
+          font-size: 15px;
         }
+        
         .table-container {
           margin: 20px auto;
+          border-radius: 8px;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
         }
+        
+        table {
+          min-width: 700px; /* 최소 너비 유지하여 가로 스크롤 가능 */
+        }
+        
         .summary-card {
           flex-direction: column;
           gap: 15px;
           padding: 15px;
         }
+        
         .summary-item {
           width: 100%;
         }
+        
         div[style*="max-width: 1200px"] {
           flex-direction: column;
           gap: 10px;
           align-items: flex-start !important;
+          padding: 0 10px;
         }
+        
         .back-btn {
           font-size: 0.9em;
+          min-height: 44px;
+          padding: 12px 20px;
+          width: 100%;
+          text-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
+        
         h2 {
-          font-size: 1.3em;
+          font-size: 1.2em;
         }
+        
         th, td {
-          padding: 10px 8px;
+          padding: 12px 8px;
+          font-size: 0.85em;
+        }
+        
+        th {
           font-size: 0.9em;
         }
+        
+        .thumb {
+          width: 45px;
+          height: 63px;
+        }
+        
+        .condition-badge {
+          font-size: 0.75em;
+          padding: 3px 6px;
+        }
+      }
+      
+      /* 모바일 대응 - 작은 스마트폰 */
+      @media (max-width: 480px) {
+        body {
+          padding: 8px;
+          font-size: 14px;
+        }
+        
+        .table-container {
+          margin: 15px auto;
+        }
+        
+        h2 {
+          font-size: 1.1em;
+        }
+        
+        th, td {
+          padding: 10px 6px;
+          font-size: 0.8em;
+        }
+        
         .thumb {
           width: 40px;
           height: 56px;
